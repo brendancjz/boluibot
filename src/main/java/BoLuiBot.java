@@ -127,6 +127,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     private void updateUserEventState(String chatId, int eventState) {
+        //TODO resolve this issue where the /spend cannot go through
+
         try {
             //Increment because new event state
             System.out.println("Current Event State: " + eventState);
@@ -135,6 +137,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             } else {
                 eventState++;
             }
+            currEventState = eventState;
             System.out.println("Updated Event State: " + eventState);
 
             String sql = "UPDATE users SET event_state=? WHERE chat_id=? ";
