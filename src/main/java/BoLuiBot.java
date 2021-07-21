@@ -18,12 +18,13 @@ public class BoLuiBot extends TelegramLongPollingBot {
     private int currEventState;
     private Connection connection;
 
-    BoLuiBot() {
+    BoLuiBot() throws URISyntaxException, SQLException {
         this.isInputtingEntry = false;
         this.typeOfEntry = "";
         this.entryList = new ArrayList<>();
         this.entriesList = new ArrayList<>();
         this.currEventState = 1;
+        this.connection = getConnection();
     }
 
 
@@ -41,68 +42,120 @@ public class BoLuiBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         // We check if the update has a message and the message has text
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        try {
 
-            SendMessage message = new SendMessage(); // Create a SendMessage object with mandatory fields
-            message.setChatId(update.getMessage().getChatId().toString());
-            String text = update.getMessage().getText();
+            if (update.hasMessage() && update.getMessage().hasText()) {
+                SendMessage message = new SendMessage(); // Create a SendMessage object with mandatory fields
+                //This returns the message to the specific user that is using the bot
+                message.setChatId(update.getMessage().getChatId().toString());
 
-            boolean cancelCondition = text.length() >= 7 && text.substring(0, 7).equals("/cancel");
 
-            //Text is a command and isInputtingEntry is false.
-            if (text.charAt(0) == '/' && !isInputtingEntry) {
-                if (text.equals("/start")) {
-                    try {
-                        generateStartEvent(update, message);
-                    } catch (URISyntaxException | SQLException e) {
-                        e.printStackTrace();
+                String text = update.getMessage().getText();
+                String chatId = update.getMessage().getChatId().toString();
+
+                //When received a text, check the sender of this text and update text into database.
+                boolean isEventStateOneGood = isEventStateOneGood(message, chatId, text);
+                System.out.println("isEventStateOneGood " + isEventStateOneGood);
+
+
+                boolean cancelCondition = text.length() >= 7 && text.substring(0, 7).equals("/cancel");
+
+                //Text is a command and isInputtingEntry is false.
+                if (text.charAt(0) == '/' && !isInputtingEntry) {
+                    switch (text) {
+                        case "/start":
+                            generateStartEvent(update, message);
+
+                        case "/entries":
+                            generateEntriesEvent(message);
+                            break;
+                        case "/help":
+                            generateHelpEvent(message);
+                            break;
+                        default:
+                            generateEventStateOne(text, message);
+                            break;
                     }
-                } else if (text.equals("/entries")) {
-                    generateEntriesEvent(message);
-                } else if (text.equals("/help")) {
-                    generateHelpEvent(message);
-                } else {
-                    generateEventStateOne(text, message);
-                }
 
-            } else if (isInputtingEntry && currEventState == 2) {
-                if (cancelCondition) { //User cancels entry.
-                    cancelEntry(message);
-                } else {
-                    generateEventStateTwo(text, message);
-                }
-            } else if (isInputtingEntry && currEventState == 3) {
-                if (cancelCondition) { //User cancels entry.
-                    cancelEntry(message);
-                } else {
-                    generateEventStateThree(text, message);
-                }
-            } else if (isInputtingEntry && currEventState == 4) {
-                if (cancelCondition) { //User cancels entry.
-                    cancelEntry(message);
-                } else {
-                    try {
+                } else if (isInputtingEntry && currEventState == 2) {
+                    if (cancelCondition) { //User cancels entry.
+                        cancelEntry(message);
+                    } else {
+                        generateEventStateTwo(text, message);
+                    }
+                } else if (isInputtingEntry && currEventState == 3) {
+                    if (cancelCondition) { //User cancels entry.
+                        cancelEntry(message);
+                    } else {
+                        generateEventStateThree(text, message);
+                    }
+                } else if (isInputtingEntry && currEventState == 4) {
+                    if (cancelCondition) { //User cancels entry.
+                        cancelEntry(message);
+                    } else {
                         generateEventStateFour(text, message, update);
-                    } catch (SQLException throwables) {
-                        throwables.printStackTrace();
+
+                        System.out.println(entriesList.toString());
                     }
 
-                    System.out.println(entriesList.toString());
+                } else {
+                    message.setText(text + " - Bo Lui"); //Echo text
                 }
 
-            } else {
-                message.setText(text + " - Bo Lui"); //Echo text
-            }
 
-
-            // Call method to send the message
-            try {
+                // Call method to send the message
                 execute(message);
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
             }
+        } catch (SQLException | TelegramApiException | URISyntaxException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
+    private boolean isEventStateOneGood(SendMessage message, String chatId, String text) {
+        boolean everythingGood = false;
+
+        try {
+
+            //2. Check if chatId is in database
+            boolean userExists = false;
+            String sql = "SELECT * FROM users WHERE chat_id = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, chatId);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                userExists = true;
+                String selectedChatId = resultSet.getString("chat_id");
+                String selectedName = resultSet.getString("name");
+                System.out.println("[" + selectedChatId + " " + selectedName + "] has been selected.");
+            }
+
+            //3. If TRUE, Store text into database of this user.
+            if (userExists) {
+                sql = "UPDATE users SET text=? WHERE chat_id=? ";
+                statement= connection.prepareStatement(sql);
+                statement.setString(1, text);
+                statement.setString(2, chatId);
+                int rowsInserted = statement.executeUpdate();
+                if ((rowsInserted > 0)) {
+                    System.out.println("Update query successful.");
+                    everythingGood = true;
+                } else {
+                    System.out.println("Update query failed.");
+                }
+            } else {
+                //4 If false, reject text and get them to type /start
+                message.setText("You have keyed in an entry without starting the bot. Type /start.");
+
+                // Call method to send the message
+                execute(message);
+
+            }
+
+        } catch (SQLException | TelegramApiException throwables) {
+            throwables.printStackTrace();
         }
 
+        return everythingGood;
     }
 
     public void generateHelpEvent(SendMessage message) {
@@ -147,8 +200,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
             System.out.println("[" + chatId + " " + name + "] has been registered.");
         }
 
-
-        //================================= [View]
         message.setText(generateIntro(update, userExists));
     }
 
