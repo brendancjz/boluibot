@@ -112,8 +112,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
         String success = "Sorry! You have not established a connection with the server. Your data is not saved into the database. Try again later.\n ";
         String sql = "INSERT INTO users (chat_id, name) VALUES (?, ?)";
         PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setString(2, chatId.toString());
-        statement.setString(3, name);
+        statement.setString(1, chatId.toString());
+        statement.setString(2, name);
         int rowsInserted = statement.executeUpdate();
         if (rowsInserted > 0) {
             success = "Yes! You have established a connection with the server. This connection is 24/7. All your data is saved into the database.\\n";
