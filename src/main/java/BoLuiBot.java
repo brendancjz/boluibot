@@ -112,7 +112,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
         String sql = "SELECT * FROM USERS WHERE chatid=? ";
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setLong(1, chatId);
-        ResultSet resultSet = preparedStatement.executeQuery(sql);
+        ResultSet resultSet = preparedStatement.executeQuery();
         boolean userExists = resultSet.getBoolean(1);
 
         //Insert into table users
