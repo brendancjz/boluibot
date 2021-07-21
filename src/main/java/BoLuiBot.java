@@ -112,16 +112,18 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
         //Check if user already in database
         boolean userExists = false;
-        String sql = "SELECT * FROM users WHERE chat_id=?";
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(sql);
-
+        String sql = "SELECT * FROM users WHERE chat_id = ?";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setString(1, chatId);
+        ResultSet resultSet = statement.executeQuery();
         while (resultSet.next()) {
             userExists = true;
             String selectedChatId = resultSet.getString("chat_id");
             String selectedName = resultSet.getString("name");
             System.out.println("[" + selectedChatId + " " + selectedName + "] has been selected.");
         }
+        statement.close();
+        resultSet.close();
 
         //Insert into table users
         if (!userExists) {
@@ -131,6 +133,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             preparedStatement.setString(2, name);
             int rowsInserted = preparedStatement.executeUpdate();
             userExists = rowsInserted > 0;
+            preparedStatement.close();
             System.out.println("[" + chatId + " " + name + "] has been registered.");
         }
 
