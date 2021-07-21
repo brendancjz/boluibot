@@ -265,6 +265,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public boolean updateEntriesList(Update update) throws SQLException {
+        System.out.println("Updating Entries");
         //================================= [Model]
         //Thinking in terms of SQL, we need to create a row in entries table.
         String chatId = update.getMessage().getChatId().toString();
@@ -285,6 +286,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
         statement.close();
         resultSet.close();
+
+        System.out.println("Inserting " + typeOfEntry + " " + category + " " + cost + " " + description + " " + selectedUserId);
 
         //Insert the entry into entries table.
         boolean successfulInsertion = false;
