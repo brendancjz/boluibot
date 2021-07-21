@@ -52,11 +52,25 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
                 String text = update.getMessage().getText();
                 String chatId = update.getMessage().getChatId().toString();
+                String name = update.getMessage().getChat().getFirstName();
 
+                switch (text) {
+                    case "/start":
+                        generateStartEvent(chatId, name, message);
+                        execute(message);
+                        return; //Code ends here
+                    case "/help":
+                        generateHelpEvent(message);
+                        execute(message);
+                        return; //Code ends here
+                    default:
+                        break;
+                }
+
+                //EVENT STATE ONE ---------------
                 //When received a text, check the sender of this text and update text into database.
-                boolean isEventStateOneGood = isEventStateOneGood(message, chatId, text);
-                System.out.println("isEventStateOneGood " + isEventStateOneGood);
-
+                boolean isCheckGood = checkingQueryAndUser(message, chatId, text);
+                System.out.println("isCheckGood " + isCheckGood);
 
                 boolean cancelCondition = text.length() >= 7 && text.substring(0, 7).equals("/cancel");
 
@@ -64,8 +78,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 if (text.charAt(0) == '/' && !isInputtingEntry) {
                     switch (text) {
                         case "/start":
-                            generateStartEvent(update, message);
-
+                            generateStartEvent(chatId, name, message);
+                            break;
                         case "/entries":
                             generateEntriesEvent(message);
                             break;
@@ -111,7 +125,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
-    private boolean isEventStateOneGood(SendMessage message, String chatId, String text) {
+    private boolean checkingQueryAndUser(SendMessage message, String chatId, String text) {
         boolean everythingGood = false;
 
         try {
@@ -163,16 +177,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
         message.setText("Currently developing on this command... Try another command.");
     }
 
-    public void generateStartEvent(Update update, SendMessage message) throws URISyntaxException, SQLException {
+    public void generateStartEvent(String chatId, String name, SendMessage message) throws URISyntaxException, SQLException {
         System.out.println("========= Start Event Called ========= ");
-        connection = getConnection();
-        boolean isConnected = !connection.isClosed();
 
         //================================= [Model]
-        //Thinking in terms of SQL, we need to create a row in users
-        String chatId = update.getMessage().getChatId().toString();
-        String name = update.getMessage().getChat().getFirstName();
-
         //Check if user already in database
         boolean userExists = false;
         String sql = "SELECT * FROM users WHERE chat_id = ?";
@@ -200,7 +208,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             System.out.println("[" + chatId + " " + name + "] has been registered.");
         }
 
-        message.setText(generateIntro(update, userExists));
+        message.setText(generateIntro(name, userExists));
     }
 
 
@@ -296,10 +304,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
         resetEntry();
     }
 
-    public String generateIntro(Update update, boolean userExists) {
+    public String generateIntro(String name, boolean userExists) {
         String intro = "";
 
-        intro += "Hi " + update.getMessage().getChat().getFirstName() +
+        intro += "Hi " + name +
                 "! I am Bo Lui and I welcome you to Sir Brendan's financial tracker to track how deep your pockets are! Sir Brendan is my creator.\n\n";
         intro += "For now, I am in the beta stages and so, I have very limited functionalities. I may crash on you. I probably will crash on you... " +
                 "But! Your opinion and feedback to the creator will surely improve my system, so thank you for using me! \n\n";
