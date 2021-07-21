@@ -228,13 +228,12 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     public void generateEventStateFour(String text, SendMessage message, Update update) throws SQLException {
         System.out.println("========= Event State Four Called ========= ");
+        entryList.add(text); //Getting the description
         boolean success = updateEntriesList(update);
         if (success) {
             if (typeOfEntry.equals("spend")) {
-                entryList.add(text); //Getting the description
                 message.setText("Thanks! You have added a new entry: \nSpent $" + entryList.get(2) + " on " + entryList.get(1) + " - \"" + entryList.get(3) + "\"");
             } else if (typeOfEntry.equals("earn")) {
-                entryList.add(text); //Getting the description
                 message.setText("Thanks! You have added a new entry: \nEarned $" + entryList.get(2) + " from " + entryList.get(1) + " - Feeling: \"" + entryList.get(3) + "\"");
             } else {
                 message.setText("Uh oh.. Something broke.");
