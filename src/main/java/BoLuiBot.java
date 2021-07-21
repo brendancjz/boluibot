@@ -108,24 +108,15 @@ public class BoLuiBot extends TelegramLongPollingBot {
         Long chatId = update.getMessage().getChatId();
         String name = update.getMessage().getChat().getFirstName();
 
-        //Check table users if user_id is already in there
-        String sql = "SELECT * FROM USERS WHERE chatid=? ";
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setLong(1, chatId);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        boolean userExists = resultSet.getBoolean(1);
-
         //Insert into table users
         String success = "Sorry! You have not established a connection with the server. Your data is not saved into the database. Try again later.\n ";
-        if (!userExists) {
-            sql = "INSERT INTO users (first_name, chatid) VALUES (?, ?)";
-            preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, name);
-            preparedStatement.setLong(2, chatId);
-            int rowsInserted = preparedStatement.executeUpdate();
-            if (rowsInserted > 0) {
-                success = "Yes! You have established a connection with the server. This connection is 24/7. All your data is saved into the database.\\n";
-            }
+        String sql = "INSERT INTO users (chat_id, name) VALUES (?, ?)";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setString(2, chatId.toString());
+        statement.setString(3, name);
+        int rowsInserted = statement.executeUpdate();
+        if (rowsInserted > 0) {
+            success = "Yes! You have established a connection with the server. This connection is 24/7. All your data is saved into the database.\\n";
         }
 
 
