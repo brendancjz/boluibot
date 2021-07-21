@@ -129,11 +129,13 @@ public class BoLuiBot extends TelegramLongPollingBot {
     private void updateUserEventState(String chatId, int eventState) {
         try {
             //Increment because new event state
+            System.out.println("Current Event State: " + eventState);
             if (eventState == 4) {
                 eventState = 1;
             } else {
                 eventState++;
             }
+            System.out.println("Updated Event State: " + eventState);
 
             String sql = "UPDATE users SET event_state=? WHERE chat_id=? ";
             PreparedStatement statement = connection.prepareStatement(sql);
