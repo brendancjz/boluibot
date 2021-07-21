@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -42,10 +43,11 @@ public class BoLuiBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
+
             SendMessage message = new SendMessage(); // Create a SendMessage object with mandatory fields
             message.setChatId(update.getMessage().getChatId().toString());
-
             String text = update.getMessage().getText();
+
             boolean cancelCondition = text.length() >= 7 && text.substring(0, 7).equals("/cancel");
 
             //Text is a command and isInputtingEntry is false.
@@ -100,17 +102,44 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     public void generateStartEvent(Update update, SendMessage message) throws URISyntaxException, SQLException {
         connection = getConnection();
+        boolean isConnected = !connection.isClosed();
+
+        //================================= [Model]
+
+        //Thinking in terms of SQL, we need to create a row in users
+        long user_id = update.getMessage().getChatId();
+        String name = update.getMessage().getChat().getFirstName();
+
+        //Check table users if user_id is already in there
+        String sql = "SELECT EXISTS(SELECT 1 FROM USERS WHERE user_id= " + user_id;
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        boolean userExists = preparedStatement.execute();
+
+        //Insert into table users
+        boolean userInserted = false;
+        if (!userExists) {
+            sql = "INSERT INTO users (user_id, first_name) VALUES (" + user_id + ", " + name + ");";
+            preparedStatement = connection.prepareStatement(sql);
+            userInserted = preparedStatement.execute();
+        }
+
+
+
+        //================================= [View]
         String intro = "";
 
         intro += "Hi " + update.getMessage().getChat().getFirstName() +
                 "! I am Bo Lui and I welcome you to Sir Brendan's financial tracker to track how deep your pockets are! Sir Brendan is my creator.\n\n";
         intro += "For now, I am in the beta stages and so, I have very limited functionalities. I may crash on you. I probably will crash on you... " +
                 "But! Your opinion and feedback to the creator will surely improve my system, so thank you for using me! \n\n";
-        intro += "Enter: \"/\" to see what I can do...\n";
-        if (connection != null) {
-            intro += "... Yes! You have established a connection with the server. All your data is saved into the database.\n ";
+        intro += "Enter: \"/\" to see what I can do...\n\n";
+
+        if (userInserted || userExists) {
+            intro += "Yes! You have established a connection with the server. This connection is 24/7. All your data is saved into the database.\n ";
+        } else {
+            intro += "Sorry! You have not established a connection with the server. Your data is not saved into the database. Try again later.\n ";
         }
-        
+
         message.setText(intro);
     }
 
