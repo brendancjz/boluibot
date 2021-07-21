@@ -3,15 +3,30 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class BoLuiBot extends TelegramLongPollingBot {
+    private boolean isInputtingEntry;
+    private String typeOfEntry;
+    private ArrayList<String> entryList;
+    private ArrayList<ArrayList<String>> entriesList;
+    private int currEventState;
+    private Connection connection;
 
-    private boolean isInputtingEntry = false;
-    private String typeOfEntry = "";
-    private ArrayList<String> entryList = new ArrayList<>();
-    private ArrayList<ArrayList<String>> entriesList = new ArrayList<>();
-    private int currEventState = 1;
+    BoLuiBot() {
+        this.isInputtingEntry = false;
+        this.typeOfEntry = "";
+        this.entryList = new ArrayList<>();
+        this.entriesList = new ArrayList<>();
+        this.currEventState = 1;
+    }
+
+
 
     @Override
     public String getBotUsername() {
@@ -36,7 +51,11 @@ public class BoLuiBot extends TelegramLongPollingBot {
             //Text is a command and isInputtingEntry is false.
             if (text.charAt(0) == '/' && !isInputtingEntry) {
                 if (text.equals("/start")) {
-                    generateStartEvent(update, message);
+                    try {
+                        generateStartEvent(update, message);
+                    } catch (URISyntaxException | SQLException e) {
+                        e.printStackTrace();
+                    }
                 } else if (text.equals("/entries")) {
                     generateEntriesEvent(message);
                 } else {
@@ -79,8 +98,14 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     }
 
-    public void generateStartEvent(Update update, SendMessage message) {
+    public void generateStartEvent(Update update, SendMessage message) throws URISyntaxException, SQLException {
+        connection = getConnection();
         String intro = "";
+
+        if (connection != null) {
+            intro += "Connection established.";
+        }
+
         intro += "Hi " + update.getMessage().getChat().getFirstName() +
                 "! I am Bo Lui and I welcome you to Sir Brendan's financial tracker to track how deep your pockets are! Sir Brendan is my creator.\n\n";
         intro += "For now, I am in the beta stages and so, I have very limited functionalities. I may crash on you. I probably will crash on you... " +
@@ -183,6 +208,16 @@ public class BoLuiBot extends TelegramLongPollingBot {
         currEventState = 1;
         isInputtingEntry = false;
         entryList = new ArrayList<String>();
+    }
+
+    private static Connection getConnection() throws URISyntaxException, SQLException {
+        URI dbUri = new URI(System.getenv("DATABASE_URL"));
+
+        String username = dbUri.getUserInfo().split(":")[0];
+        String password = dbUri.getUserInfo().split(":")[1];
+        String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+
+        return DriverManager.getConnection(dbUrl, username, password);
     }
 }
 
