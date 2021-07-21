@@ -65,7 +65,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 }
 
             } else {
-                message.setText(text); //Echo text
+                message.setText(text + " - Bo Lui"); //Echo text
             }
 
 
