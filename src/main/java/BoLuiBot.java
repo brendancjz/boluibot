@@ -100,6 +100,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public void generateStartEvent(Update update, SendMessage message) throws URISyntaxException, SQLException {
+        System.out.println("========= Start Event Called ========= ");
         connection = getConnection();
         boolean isConnected = !connection.isClosed();
 
@@ -123,14 +124,13 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
 
         //Insert into table users
-        boolean successfulInsertion = false;
         if (!userExists) {
             sql = "INSERT INTO users (chat_id, name) VALUES (?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, chatId);
             preparedStatement.setString(2, name);
             int rowsInserted = preparedStatement.executeUpdate();
-            successfulInsertion = rowsInserted > 0;
+            userExists = rowsInserted > 0;
             System.out.println("[" + chatId + " " + name + "] has been registered.");
         }
 
@@ -144,17 +144,23 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 "But! Your opinion and feedback to the creator will surely improve my system, so thank you for using me! \n\n";
         intro += "Enter: \"/\" to see what I can do...\n\n";
 
-        if (successfulInsertion) {
+        if (userExists) {
             intro += "Yes! You have established a connection with the server. This connection is 24/7. All your data is saved into the database.\n";
         } else {
             intro += "Sorry! You have not established a connection with the server. Your data is not saved into the database. Try again later.\n ";
         }
 
+        if (intro.equals("")) {
+            message.setText("Uh oh... Something broke.");
+        } else {
+            message.setText(intro);
+        }
 
-        message.setText(intro);
     }
 
     public void generateEntriesEvent(SendMessage message) {
+        System.out.println("========= Entries Event Called ========= ");
+
         String entries = "ENTRIES\n";
         entries += "|---------------- \n";
         for (ArrayList<String> entry : entriesList) {
@@ -176,6 +182,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     }
     public void generateEventStateOne(String command, SendMessage message) {
+        System.out.println("========= Event State One Called ========= ");
+
         if (command.equals("/spend")) {
             message.setText("Alright, what did you spend on? [Input Category]");
             isInputtingEntry = true;
@@ -192,6 +200,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public void generateEventStateTwo(String text, SendMessage message) {
+        System.out.println("========= Event State Two Called ========= ");
+
         if (typeOfEntry.equals("spend")) {
             entryList.add(text); //Getting the category
             message.setText("Okay, how much did you spend on " + text + "? [Input Cost]");
@@ -206,6 +216,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public void generateEventStateThree(String text, SendMessage message) {
+        System.out.println("========= Event State Three Called ========= ");
+
         if (typeOfEntry.equals("spend")) {
             entryList.add(text); //Getting the cost
             message.setText("$" + text + ", got it. Now, what's the story behind this? [Input Description]");
@@ -220,6 +232,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public void generateEventStateFour(String text, SendMessage message) {
+        System.out.println("========= Event State Four Called ========= ");
+
         if (typeOfEntry.equals("spend")) {
             entryList.add(text); //Getting the description
             message.setText("Thanks! You have added a new entry: \nSpent $" + entryList.get(2) + " on " + entryList.get(1) + " - \"" + entryList.get(3) + "\"");
