@@ -102,16 +102,16 @@ public class BoLuiBot extends TelegramLongPollingBot {
         connection = getConnection();
         String intro = "";
 
-        if (connection != null) {
-            intro += "Connection established.";
-        }
-
         intro += "Hi " + update.getMessage().getChat().getFirstName() +
                 "! I am Bo Lui and I welcome you to Sir Brendan's financial tracker to track how deep your pockets are! Sir Brendan is my creator.\n\n";
         intro += "For now, I am in the beta stages and so, I have very limited functionalities. I may crash on you. I probably will crash on you... " +
                 "But! Your opinion and feedback to the creator will surely improve my system, so thank you for using me! \n\n";
-        intro += "Enter: \"/\" to see what I can do...";
 
+        if (connection != null) {
+            intro += "... Yes! You have established a connection with the server! All your data is saved! ";
+        }
+
+        intro += "Enter: \"/\" to see what I can do...\n";
         message.setText(intro);
     }
 
