@@ -97,11 +97,18 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         case "/entries":
                             generateEntriesEvent(chatId, message);
                             break;
-                        default:
+                        case "/spend":
+                        case "/earn":
                             updateUserEntryType(chatId, text);
                             generateEventStateOne(text, message, getUserEntryType(chatId));
                             updateUserEventState(chatId, currEventState);
                             updateIsUserInputting(chatId, isInputtingEntry);
+                            break;
+
+                        default:
+
+                            //unknown command
+                            message.setText("Oops, unknown command. Let's try another.");
                             break;
                     }
 
@@ -142,7 +149,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                     }
 
                 } else {
-                    message.setText(text + " - Bo Lui"); //Echo text
+                    message.setText(text + " - BoLui"); //Echo text
                 }
 
 
