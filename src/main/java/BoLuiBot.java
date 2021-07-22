@@ -174,7 +174,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 "I accept your entries with commands /spend or /earn. I keep track of your spendings and earnings " +
                 "in a very straight forward way. To view your inputted entries, type /entries. \n\n" +
                 "Made a mistake while inputting an entry? Type /cancel to reset it. \n\n" +
-                "For now, I cannot edit your created entries or even delete them! Don't worry though, I will soon :)\n\n\n\n" +
+                "For now, I cannot edit your created entries or even delete them! Don't worry though, I will soon :)\n\n\n" +
                 "Last thing, I enjoy being a parrot. I will echo your latest message whenever I feel like it...");
     }
 
@@ -269,9 +269,9 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 String description = resultSet.getString("description");
 
                 if (typeOfEntry.equals("spend")) {
-                    entries += "   <" + count + ".>  - $" + cost + " on " + category + "\n";
+                    entries += "   <" + count + ">  - $" + cost + " on " + category + "\n";
                 } else if (typeOfEntry.equals("earn")) {
-                    entries += "   <" + count + ".>  + $" + cost + " from " + category + "\n";
+                    entries += "   <" + count + ">  + $" + cost + " from " + category + "\n";
                 }
             }
 
