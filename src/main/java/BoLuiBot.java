@@ -11,6 +11,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class BoLuiBot extends TelegramLongPollingBot {
+    private static final int INITIAL_EVENT_STATE = 1;
     private boolean isInputtingEntry;
     private String typeOfEntry;
     private ArrayList<String> entryList;
@@ -138,7 +139,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             } else {
                 eventState++;
             }
-            currEventState = eventState;
+            
             errorLogs.add("Updated Event State: " + eventState);
 
             String sql = "UPDATE users SET event_state=? WHERE chat_id=? ";
@@ -231,8 +232,11 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     public void generateHelpEvent(SendMessage message) {
         //TODO
-
-        message.setText(errorLogs.toString());
+        String log = "";
+        for (String error : errorLogs) {
+            log += error + "\n";
+        }
+        message.setText(log);
     }
 
     public void generateStartEvent(String chatId, String name, String text, SendMessage message) throws URISyntaxException, SQLException {
@@ -259,7 +263,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, chatId);
             preparedStatement.setString(2, name);
-            preparedStatement.setInt(3, currEventState);
+            preparedStatement.setInt(3, INITIAL_EVENT_STATE);
             preparedStatement.setBoolean(4, false);
             preparedStatement.setObject(5, new String[4]);
             preparedStatement.setString(6, text);
