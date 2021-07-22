@@ -10,12 +10,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class BoLuiBot extends TelegramLongPollingBot {
     private static final int INITIAL_EVENT_STATE = 1;
     private static final int FINAL_EVENT_STATE = 4;
     private static final boolean INITIAL_IS_INPUTTING = false;
-    private static final String INITIAL_ENTRY_LIST = "null";
+    private static final String[] INITIAL_ENTRY_LIST = new String[3];
     private static final String INITIAL_ENTRY_TYPE = "null";
     private static final String RESET_ENTRY_TYPE = "/reset";
     private ArrayList<String> entryList;
@@ -391,20 +392,16 @@ public class BoLuiBot extends TelegramLongPollingBot {
         if (!userExists) {
             errorLogs.add("This user is not registered yet.");
 
-            PGobject jsonObj = new PGobject();
-            jsonObj.setType("json");
-            jsonObj.setValue(INITIAL_ENTRY_LIST);
-            errorLogs.add(jsonObj.toString());
-
-            sql = "INSERT INTO users (chat_id, name, event_state, is_inputting, entry_list, text, entry_type) VALUES (?, ?, ?, ?, ?::json, ?, ?)";
+            sql = "INSERT INTO users (chat_id, name, event_state, is_inputting, text, entry_type, entry_list) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, chatId);
             preparedStatement.setString(2, name);
             preparedStatement.setInt(3, INITIAL_EVENT_STATE);
             preparedStatement.setBoolean(4, INITIAL_IS_INPUTTING);
-            preparedStatement.setObject(5, jsonObj);
-            preparedStatement.setString(6, text);
-            preparedStatement.setString(7, INITIAL_ENTRY_TYPE);
+            preparedStatement.setString(5, text);
+            preparedStatement.setString(6, INITIAL_ENTRY_TYPE);
+            preparedStatement.setString(7, Arrays.toString(INITIAL_ENTRY_LIST));
 
             int rowsInserted = preparedStatement.executeUpdate();
             if (rowsInserted > 0) {
@@ -456,9 +453,9 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 String description = resultSet.getString("description");
 
                 if (typeOfEntry.equals("spend")) {
-                    entries += "->  - $" + cost + " on " + category + "\n";
+                    entries += "<>  - $" + cost + " on " + category + "\n";
                 } else if (typeOfEntry.equals("earn")) {
-                    entries += "->  + $" + cost + " on " + category + "\n";
+                    entries += "<>  + $" + cost + " from " + category + "\n";
                 }
             }
 
