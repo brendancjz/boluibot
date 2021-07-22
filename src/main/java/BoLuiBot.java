@@ -12,15 +12,15 @@ import java.util.ArrayList;
 
 public class BoLuiBot extends TelegramLongPollingBot {
     private static final int INITIAL_EVENT_STATE = 1;
-    private boolean isInputtingEntry;
+    private static final int FINAL_EVENT_STATE = 4;
+    private static final boolean INITIAL_IS_INPUTTING = false;
     private String typeOfEntry;
     private ArrayList<String> entryList;
-    private ArrayList<ArrayList<String>> entriesList;
-    private Connection connection;
-    private ArrayList<String> errorLogs;
+    private final ArrayList<ArrayList<String>> entriesList;
+    private final Connection connection;
+    private final ArrayList<String> errorLogs;
 
     BoLuiBot() throws URISyntaxException, SQLException {
-        this.isInputtingEntry = false;
         this.typeOfEntry = "";
         this.entryList = new ArrayList<>();
         this.entriesList = new ArrayList<>();
@@ -73,8 +73,9 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 boolean isCheckGood = checkingQueryAndUser(message, chatId, text);
                 errorLogs.add("Received text and Checking user... isCheckGood " + isCheckGood);
 
-                //Get event state from user *VERY IMPORTANT*
+                //Get info from user *VERY IMPORTANT*
                 int currEventState = getUserEventState(chatId);
+                boolean isInputtingEntry = getIsUserInputting(chatId);
 
                 //Not impt stuff
                 boolean cancelCondition = text.length() >= 7 && text.substring(0, 7).equals("/cancel");
@@ -88,12 +89,15 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         default:
                             generateEventStateOne(text, message);
                             updateUserEventState(chatId, currEventState);
+                            updateIsUserInputting(chatId, isInputtingEntry);
                             break;
                     }
 
                 } else if (isInputtingEntry && currEventState == 2) {
                     if (cancelCondition) { //User cancels entry.
                         cancelEntry(message);
+                        updateUserEventState(chatId, FINAL_EVENT_STATE);
+                        updateIsUserInputting(chatId, isInputtingEntry);
                     } else {
                         generateEventStateTwo(text, message);
                         updateUserEventState(chatId, currEventState);
@@ -101,6 +105,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 } else if (isInputtingEntry && currEventState == 3) {
                     if (cancelCondition) { //User cancels entry.
                         cancelEntry(message);
+                        updateUserEventState(chatId, FINAL_EVENT_STATE);
+                        updateIsUserInputting(chatId, isInputtingEntry);
                     } else {
                         generateEventStateThree(text, message);
                         updateUserEventState(chatId, currEventState);
@@ -108,9 +114,13 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 } else if (isInputtingEntry && currEventState == 4) {
                     if (cancelCondition) { //User cancels entry.
                         cancelEntry(message);
+                        updateUserEventState(chatId, FINAL_EVENT_STATE);
+                        updateIsUserInputting(chatId, isInputtingEntry);
                     } else {
                         generateEventStateFour(text, message, update);
                         updateUserEventState(chatId, currEventState);
+                        updateIsUserInputting(chatId, isInputtingEntry);
+                        resetEntry();
 
                         errorLogs.add(entriesList.toString());
                     }
@@ -129,8 +139,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     private void updateUserEventState(String chatId, int eventState) {
-        //TODO resolve this issue where the /spend cannot go through
-
         try {
             //Increment because new event state
             errorLogs.add("Current Event State: " + eventState);
@@ -139,8 +147,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
             } else {
                 eventState++;
             }
-            
-            errorLogs.add("Updated Event State: " + eventState);
+
+            errorLogs.add("Event State should now be: " + eventState);
 
             String sql = "UPDATE users SET event_state=? WHERE chat_id=? ";
             PreparedStatement statement = connection.prepareStatement(sql);
@@ -181,6 +189,52 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
 
         return eventState;
+    }
+
+    private void updateIsUserInputting(String chatId, Boolean isInputting) {
+        try {
+            if (isInputting) {
+                isInputting = false;
+            } else {
+                isInputting = true;
+            }
+
+            errorLogs.add("is_inputting should now be: " + isInputting);
+
+            String sql = "UPDATE users SET is_inputting=? WHERE chat_id=? ";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setBoolean(1, isInputting);
+            statement.setString(2, chatId);
+            int rowsInserted = statement.executeUpdate();
+            if ((rowsInserted > 0)) {
+                errorLogs.add("Update query successful.");
+
+            } else {
+                errorLogs.add("Update query failed.");
+            }
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
+    private boolean getIsUserInputting(String chatId) {
+        boolean isInputting = false;
+        try {
+            //Selecting User from Users table.
+            String sql = "SELECT * FROM users WHERE chat_id = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, chatId);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                isInputting = resultSet.getBoolean("is_inputting");
+                errorLogs.add("[" + chatId + "] Current is_inputting: " + isInputting);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        return isInputting;
     }
 
     private boolean checkingQueryAndUser(SendMessage message, String chatId, String text) {
@@ -308,12 +362,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
         if (command.equals("/spend")) {
             message.setText("Alright, what did you spend on? [Input Category]");
-            isInputtingEntry = true;
             typeOfEntry = "spend";
 
         } else if (command.equals("/earn")) {
             message.setText("Swee! Where did you earn this moolah? [Input Category]");
-            isInputtingEntry = true;
             typeOfEntry = "earn";
         }
 
@@ -364,8 +416,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
         } else {
             message.setText("Uh oh.. Entry failed.");
         }
-
-        resetEntry();
     }
 
     public String generateIntro(String name, boolean userExists) {
@@ -439,7 +489,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public void resetEntry() {
-        isInputtingEntry = false;
         entryList = new ArrayList<String>();
     }
 
