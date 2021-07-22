@@ -68,8 +68,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         generateStartEvent(chatId, name, text, message);
                         execute(message);
                         return; //Code ends here
-                    case "/help":
-                        generateHelpEvent(message);
+                    case "/errorlogs":
+                        generateErrorLogsEvent(message);
                         execute(message);
                         return; //Code ends here
                     default:
@@ -166,6 +166,11 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     private void generateHelpEvent(SendMessage message) {
+
+        message.setText("Hi this is the help page. ");
+    }
+
+    private void generateErrorLogsEvent(SendMessage message) {
         String log = "------ Generating Error Logs ------ \n";
         for (String error : errorLogs) {
             log += error + "\n";
@@ -277,12 +282,12 @@ public class BoLuiBot extends TelegramLongPollingBot {
         errorLogs.add(" === Event State One Called === ");
 
         if (command.equals("/spend")) {
-            message.setText("Alright, what did you spend on? [Input Category]");
-            typeOfEntry = "spend";
+            String prompt = Prompts.generateEventOneSpendPrompt();
+            message.setText(prompt);
 
         } else if (command.equals("/earn")) {
-            message.setText("Swee! Where did you earn this moolah? [Input Category]");
-            typeOfEntry = "earn";
+            String prompt = Prompts.generateEventOneEarnPrompt();
+            message.setText(prompt);
         }
 
     }
