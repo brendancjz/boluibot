@@ -41,14 +41,11 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        //TODO Finalise the idea for the JSON entry_list.
+        //TODO
         // For now, all commands are working. can Create, Add and Update. Need to do EDIT and DELETE.
-        // Need more functionalities for /cancel
         // Need to create a TOTAL Spendings and Earnings
         // Need to create Categories for users to select. e.g Food, Clothes, Gifts.
         // Need more commands to spice up user experience.
-        // Fix /entries command
-        // Make sure the text is always taken from SQL
 
         // We check if the update has a message and the message has text
         try {
@@ -110,7 +107,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
                         default:
                             //unknown command
-                            message.setText("Oops, unknown command. Let's try another.");
+                            message.setText("Oops, that doesn't seem right. Let's try another.");
                             break;
                     }
 
@@ -177,7 +174,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 "I accept your entries with commands /spend or /earn. I keep track of your spendings and earnings " +
                 "in a very straight forward way. To view your inputted entries, type /entries. \n\n" +
                 "Made a mistake while inputting an entry? Type /cancel to reset it. \n\n" +
-                "For now, I cannot edit your created entries or even delete them! Don't worry, I will soon :)\n\n\n\n" +
+                "For now, I cannot edit your created entries or even delete them! Don't worry though, I will soon :)\n\n\n\n" +
                 "Last thing, I enjoy being a parrot. I will echo your latest message whenever I feel like it...");
     }
 
@@ -265,7 +262,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
             resultSet = statement.executeQuery();
             int count = 0;
             while (resultSet.next()) {
-                errorLogs.add("Found an entry!");
                 count++;
                 String typeOfEntry = resultSet.getString("typeofentry");
                 String category = resultSet.getString("category");
@@ -273,10 +269,16 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 String description = resultSet.getString("description");
 
                 if (typeOfEntry.equals("spend")) {
-                    entries += "<>  - $" + cost + " on " + category + "\n";
+                    entries += "   <" + count + ".>  - $" + cost + " on " + category + "\n";
                 } else if (typeOfEntry.equals("earn")) {
-                    entries += "<>  + $" + cost + " from " + category + "\n";
+                    entries += "   <" + count + ".>  + $" + cost + " from " + category + "\n";
                 }
+            }
+
+            if (count > 0) {
+                errorLogs.add("[Entries] Select query successful.");
+            } else {
+                errorLogs.add("[Entries] Select query unsuccessful.");
             }
 
             entries += "Number of entries found: " + count;
