@@ -17,7 +17,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
     private static final boolean INITIAL_IS_INPUTTING = false;
     private static final String INITIAL_ENTRY_LIST = "null";
     private static final String INITIAL_ENTRY_TYPE = "null";
-    private static final String RESET_ENTRY_TYPE = "reset";
+    private static final String RESET_ENTRY_TYPE = "/reset";
     private ArrayList<String> entryList;
     private final ArrayList<ArrayList<String>> entriesList;
     private final Connection connection;
@@ -261,9 +261,12 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 entryType = "spend";
             } else if (command.equals("/earn")) {
                 entryType = "earn";
+            } else if (command.equals("/reset")) {
+                entryType = "null";
             } else {
                 entryType = "error";
             }
+
 
             errorLogs.add("entry_type should now be: " + entryType);
 
@@ -447,7 +450,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 }
             }
 
-            message.setChatId(entries);
+            message.setText(entries);
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
