@@ -170,7 +170,12 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     private void generateHelpEvent(SendMessage message) {
 
-        message.setText("Hi this is the help page. ");
+        message.setText("Hi hi! Here's a quick intro to what I can do. \n\n" +
+                "I accept your entries with commands /spend or /earn. I keep track of your spendings and earnings " +
+                "in a very straight forward way. To view your inputted entries, type /entries. \n\n" +
+                "Made a mistake while inputting an entry? Type /cancel to reset it. \n\n" +
+                "For now, I cannot edit your created entries or even delete them! Don't worry, I will soon :)\n\n\n\n" +
+                "Last thing, I enjoy being a parrot. I will echo your latest message whenever I feel like it...");
     }
 
     private void generateErrorLogsEvent(SendMessage message) {
