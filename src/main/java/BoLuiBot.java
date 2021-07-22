@@ -119,8 +119,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         updateUserEventState(chatId, FINAL_EVENT_STATE);
                         updateIsUserInputting(chatId, isInputtingEntry);
                         updateUserEntryType(chatId, RESET_ENTRY_TYPE);
+                        resetEntryList(chatId);
                     } else {
                         generateEventStateTwo(text, message, entryType);
+                        addEntryListItem(chatId, text, currEventState);
                         updateUserEventState(chatId, currEventState);
                     }
                 } else if (isInputtingEntry && currEventState == 3) {
@@ -129,8 +131,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         updateUserEventState(chatId, FINAL_EVENT_STATE);
                         updateIsUserInputting(chatId, isInputtingEntry);
                         updateUserEntryType(chatId, RESET_ENTRY_TYPE);
+                        resetEntryList(chatId);
                     } else {
                         generateEventStateThree(text, message, entryType);
+                        addEntryListItem(chatId, text, currEventState);
                         updateUserEventState(chatId, currEventState);
                     }
                 } else if (isInputtingEntry && currEventState == 4) {
@@ -139,11 +143,14 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         updateUserEventState(chatId, FINAL_EVENT_STATE);
                         updateIsUserInputting(chatId, isInputtingEntry);
                         updateUserEntryType(chatId, RESET_ENTRY_TYPE);
+                        resetEntryList(chatId);
                     } else {
                         generateEventStateFour(text, message, update, entryType);
+                        addEntryListItem(chatId, text, currEventState);
                         updateUserEventState(chatId, currEventState);
                         updateIsUserInputting(chatId, isInputtingEntry);
                         updateUserEntryType(chatId, RESET_ENTRY_TYPE);
+                        resetEntryList(chatId);
                         resetEntry();
 
                         errorLogs.add(entriesList.toString());
@@ -158,6 +165,68 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 execute(message);
             }
         } catch (SQLException | TelegramApiException | URISyntaxException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
+    private void resetEntryList(String chatId) {
+        try {
+            errorLogs.add("Resetting Entry List");
+            String[] resetEntryListArr = new String[3];
+
+            String sql = "UPDATE users SET entry_list=? WHERE chat_id=? ";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, Arrays.toString(resetEntryListArr));
+            statement.setString(2, chatId);
+            int rowsInserted = statement.executeUpdate();
+            if ((rowsInserted > 0)) {
+                errorLogs.add("[Reset Entry List] Update query successful.");
+
+            } else {
+                errorLogs.add("[Reset Entry List] Update query failed.");
+            }
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+    }
+
+    private void addEntryListItem(String chatId, String text, int currEventState) {
+        try {
+            errorLogs.add("Adding entry list item at event state: " + currEventState);
+            //Get all the entry list first
+            String entryList = "";
+
+            String sql = "SELECT * FROM users WHERE chat_id = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, chatId);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                entryList = resultSet.getString("entry_list");
+                errorLogs.add("Got the entry list.");
+            }
+            errorLogs.add("Entry list is: " + entryList);
+
+            //Clean the entry list string to be an array
+            String[] tempArr = entryList.substring(1, entryList.length() - 1).split(", ");
+            //Update tempArr with new list item
+            tempArr[currEventState - 1] = text;
+
+            //Update entry_list
+            sql = "UPDATE users SET entry_list=? WHERE chat_id=? ";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, Arrays.toString(tempArr));
+            statement.setString(2, chatId);
+            int rowsInserted = statement.executeUpdate();
+            if ((rowsInserted > 0)) {
+                errorLogs.add("[Entry List] Update query successful.");
+
+            } else {
+                errorLogs.add("[Entry List] Update query failed.");
+            }
+
+        } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
     }
@@ -189,8 +258,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-
-
     }
 
     private int getUserEventState(String chatId) {
