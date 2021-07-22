@@ -15,7 +15,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
     private String typeOfEntry;
     private ArrayList<String> entryList;
     private ArrayList<ArrayList<String>> entriesList;
-    private int currEventState;
     private Connection connection;
     private ArrayList<String> errorLogs;
 
@@ -24,7 +23,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
         this.typeOfEntry = "";
         this.entryList = new ArrayList<>();
         this.entriesList = new ArrayList<>();
-        this.currEventState = 1;
         this.connection = getConnection();
         this.errorLogs = new ArrayList<>();
     }
@@ -72,10 +70,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 //EVENT STATE ONE ---------------
                 //When received a text, check the sender of this text and update text into database.
                 boolean isCheckGood = checkingQueryAndUser(message, chatId, text);
-                errorLogs.add("isCheckGood " + isCheckGood);
+                errorLogs.add("Received text and Checking user... isCheckGood " + isCheckGood);
 
                 //Get event state from user *VERY IMPORTANT*
-                currEventState = getUserEventState(chatId);
+                int currEventState = getUserEventState(chatId);
 
                 //Not impt stuff
                 boolean cancelCondition = text.length() >= 7 && text.substring(0, 7).equals("/cancel");
@@ -88,6 +86,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                             break;
                         default:
                             generateEventStateOne(text, message);
+                            updateUserEventState(chatId, currEventState);
                             break;
                     }
 
@@ -162,6 +161,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     private int getUserEventState(String chatId) {
+        errorLogs.add(" === getUserEventState called === ");
+
         int eventState = 0;
 
         try {
@@ -235,7 +236,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public void generateStartEvent(String chatId, String name, String text, SendMessage message) throws URISyntaxException, SQLException {
-        errorLogs.add("========= Start Event Called ========= ");
+        errorLogs.add("=== Start Event Called === ");
 
         //================================= [Model]
         //Check if user already in database
@@ -246,9 +247,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
         ResultSet resultSet = statement.executeQuery();
         while (resultSet.next()) {
             userExists = true;
-            String selectedChatId = resultSet.getString("chat_id");
             String selectedName = resultSet.getString("name");
-            errorLogs.add("[" + selectedChatId + " " + selectedName + "] has been selected.");
+            errorLogs.add("[" + selectedName + "] has been selected.");
         }
         statement.close();
         resultSet.close();
@@ -267,7 +267,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             int rowsInserted = preparedStatement.executeUpdate();
             userExists = rowsInserted > 0;
             preparedStatement.close();
-            errorLogs.add("[" + chatId + " " + name + "] has been registered.");
+            errorLogs.add("[" + name + "] has been registered.");
         }
 
         message.setText(generateIntro(name, userExists));
@@ -298,7 +298,9 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     }
     public void generateEventStateOne(String command, SendMessage message) {
-        errorLogs.add("========= Event State One Called ========= ");
+        //TODO switch out this type of entry here and change it with CRUD. typeOfEntry becomes local variable
+
+        errorLogs.add(" === Event State One Called === ");
 
         if (command.equals("/spend")) {
             message.setText("Alright, what did you spend on? [Input Category]");
