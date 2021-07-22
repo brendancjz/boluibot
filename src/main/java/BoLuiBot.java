@@ -20,13 +20,11 @@ public class BoLuiBot extends TelegramLongPollingBot {
     private static final String INITIAL_ENTRY_TYPE = "null";
     private static final String RESET_ENTRY_TYPE = "/reset";
     private ArrayList<String> entryList;
-    private final ArrayList<ArrayList<String>> entriesList;
     private final Connection connection;
     private final ArrayList<String> errorLogs;
 
     BoLuiBot() throws URISyntaxException, SQLException {
         this.entryList = new ArrayList<>();
-        this.entriesList = new ArrayList<>();
         this.connection = getConnection();
         this.errorLogs = new ArrayList<>();
     }
@@ -145,15 +143,14 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         updateUserEntryType(chatId, RESET_ENTRY_TYPE);
                         resetEntryList(chatId);
                     } else {
-                        generateEventStateFour(text, message, update, entryType);
+                        generateEventStateFour(text, message, entryType);
                         addEntryListItem(chatId, text, currEventState);
+                        updateEntriesList(chatId);
                         updateUserEventState(chatId, currEventState);
                         updateIsUserInputting(chatId, isInputtingEntry);
                         updateUserEntryType(chatId, RESET_ENTRY_TYPE);
                         resetEntryList(chatId);
                         resetEntry();
-
-                        errorLogs.add(entriesList.toString());
                     }
 
                 } else {
@@ -580,21 +577,18 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
-    public void generateEventStateFour(String text, SendMessage message, Update update, String typeOfEntry) throws SQLException {
+    public void generateEventStateFour(String text, SendMessage message, String typeOfEntry) {
         errorLogs.add("========= Event State Four Called ========= ");
         entryList.add(text); //Getting the description
-        boolean success = updateEntriesList(update, typeOfEntry);
-        if (success) {
-            if (typeOfEntry.equals("spend")) {
-                message.setText("Thanks! You have added a new entry: \nSpent $" + entryList.get(2) + " on " + entryList.get(1) + " - \"" + entryList.get(3) + "\"");
-            } else if (typeOfEntry.equals("earn")) {
-                message.setText("Thanks! You have added a new entry: \nEarned $" + entryList.get(2) + " from " + entryList.get(1) + " - Feeling: \"" + entryList.get(3) + "\"");
-            } else {
-                message.setText("Uh oh.. Something broke.");
-            }
+
+        if (typeOfEntry.equals("spend")) {
+            message.setText("Thanks! You have added a new entry: \nSpent $" + entryList.get(2) + " on " + entryList.get(1) + " - \"" + entryList.get(3) + "\"");
+        } else if (typeOfEntry.equals("earn")) {
+            message.setText("Thanks! You have added a new entry: \nEarned $" + entryList.get(2) + " from " + entryList.get(1) + " - Feeling: \"" + entryList.get(3) + "\"");
         } else {
-            message.setText("Uh oh.. Entry failed.");
+            message.setText("Uh oh.. Something broke.");
         }
+
     }
 
     public String generateIntro(String name, boolean userExists) {
@@ -616,51 +610,56 @@ public class BoLuiBot extends TelegramLongPollingBot {
         return intro;
     }
 
-    public boolean updateEntriesList(Update update, String typeOfEntry) throws SQLException {
+    public void updateEntriesList(String chatId) throws SQLException {
         errorLogs.add("Updating Entries");
         //================================= [Model]
         //Thinking in terms of SQL, we need to create a row in entries table.
-        String chatId = update.getMessage().getChatId().toString();
-        int selectedUserId = 0;
-        String category = entryList.get(1);
-        Double cost = Double.parseDouble(entryList.get(2));
-        String description = entryList.get(3);
 
-        //Check if user already in database
-        boolean userExists = false;
+        //Get entry list items from database
+        String entryList = "";
+        String entryType = "";
+        int selectedUserId = 0;
+
         String sql = "SELECT * FROM users WHERE chat_id = ?";
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.setString(1, chatId);
         ResultSet resultSet = statement.executeQuery();
         while (resultSet.next()) { //Should only loop once
-            userExists = true;
+            entryList = resultSet.getString("entry_list");
+            entryType = resultSet.getString("entry_type");
             selectedUserId = resultSet.getInt("user_id");
         }
-        statement.close();
-        resultSet.close();
 
-        errorLogs.add("Inserting " + typeOfEntry + " " + category + " " + cost + " " + description + " " + selectedUserId);
+        //Clean up the entryList string into array and store the list items
+        String[] entryListArr = entryList.substring(1, entryList.length() - 1).split(", ");
+
+        //Insert entry into entries table
+
+        String category = entryListArr[0];
+        Double cost = Double.parseDouble(entryListArr[1]);
+        String description = entryListArr[2];
+
+        errorLogs.add("Inserting " + entryType + " " + category + " " + cost + " " + description + " " + selectedUserId);
 
         //Insert the entry into entries table.
-        boolean successfulInsertion = false;
-        if (userExists) {
-            sql = "INSERT INTO entries (typeOfEntry, category, cost, description, user_id) VALUES " +
-                    "(?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, typeOfEntry);
-            preparedStatement.setString(2, category);
-            preparedStatement.setDouble(3, cost);
-            preparedStatement.setString(4, description);
-            preparedStatement.setInt(5, selectedUserId);
 
-            int rowsInserted = preparedStatement.executeUpdate();
-            successfulInsertion = rowsInserted > 0;
-            preparedStatement.close();
+        sql = "INSERT INTO entries (typeOfEntry, category, cost, description, user_id) VALUES " +
+                "(?, ?, ?, ?, ?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, entryList);
+        preparedStatement.setString(2, category);
+        preparedStatement.setDouble(3, cost);
+        preparedStatement.setString(4, description);
+        preparedStatement.setInt(5, selectedUserId);
 
+        int rowsInserted = preparedStatement.executeUpdate();
+        if( rowsInserted > 0 ) {
+            errorLogs.add("[Entry List Insert] Insert query successful");
+        } else {
+            errorLogs.add("[Entry List Insert] Insert query unsuccessful");
         }
+        preparedStatement.close();
 
-        entriesList.add(entryList);
-        return successfulInsertion;
     }
 
     public void cancelEntry(SendMessage message) {
