@@ -95,7 +95,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 if (text.charAt(0) == '/' && !isInputtingEntry) {
                     switch (text) {
                         case "/entries":
-                            generateEntriesEvent(message);
+                            generateEntriesEvent(chatId, message);
                             break;
                         default:
                             updateUserEntryType(chatId, text);
@@ -411,7 +411,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
 
-    public void generateEntriesEvent(SendMessage message, String chatId) {
+    public void generateEntriesEvent(String chatId, SendMessage message) {
         try {
             errorLogs.add("========= Entries Event Called ========= ");
             //Get user_id key from users table
