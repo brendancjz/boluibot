@@ -211,7 +211,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             //Clean the entry list string to be an array
             String[] tempArr = entryList.substring(1, entryList.length() - 1).split(", ");
             //Update tempArr with new list item
-            tempArr[currEventState - 1] = text;
+            tempArr[currEventState - 2] = text;
 
             //Update entry_list
             sql = "UPDATE users SET entry_list=? WHERE chat_id=? ";
