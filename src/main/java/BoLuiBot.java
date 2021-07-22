@@ -82,7 +82,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 //When received a text, check the sender of this text and update text into database.
                 boolean isCheckGood = checkingQueryAndUser(message, chatId, text);
                 errorLogs.add("Received text and Checking user... isCheckGood " + isCheckGood);
-
+                //Get text from database. Just in case... Prevent hiccups from multiple users update at the same time.
+                text = getUserText(chatId);
                 //Get info from user *VERY IMPORTANT*
                 int currEventState = getUserEventState(chatId);
                 boolean isInputtingEntry = getIsUserInputting(chatId);
@@ -165,6 +166,252 @@ public class BoLuiBot extends TelegramLongPollingBot {
         } catch (SQLException | TelegramApiException | URISyntaxException throwables) {
             throwables.printStackTrace();
         }
+    }
+
+    private void generateHelpEvent(SendMessage message) {
+        String log = "------ Generating Error Logs ------ \n";
+        for (String error : errorLogs) {
+            log += error + "\n";
+        }
+        message.setText(log);
+        errorLogs.clear();
+    }
+
+    private void generateStartEvent(String chatId, String name, String text, SendMessage message) throws URISyntaxException, SQLException {
+        errorLogs.add("=== Start Event Called === ");
+
+        //================================= [Model]
+        //Check if user already in database
+        boolean userExists = false;
+        String sql = "SELECT * FROM users WHERE chat_id = ?";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setString(1, chatId);
+        ResultSet resultSet = statement.executeQuery();
+        while (resultSet.next()) {
+            userExists = true;
+            String selectedName = resultSet.getString("name");
+            errorLogs.add("[" + selectedName + "] has been selected.");
+        }
+        statement.close();
+        resultSet.close();
+
+        //Insert into table users
+        if (!userExists) {
+            errorLogs.add("This user is not registered yet.");
+
+            sql = "INSERT INTO users (chat_id, name, event_state, is_inputting, text, entry_type, entry_list) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, chatId);
+            preparedStatement.setString(2, name);
+            preparedStatement.setInt(3, INITIAL_EVENT_STATE);
+            preparedStatement.setBoolean(4, INITIAL_IS_INPUTTING);
+            preparedStatement.setString(5, text);
+            preparedStatement.setString(6, INITIAL_ENTRY_TYPE);
+            preparedStatement.setString(7, Arrays.toString(INITIAL_ENTRY_LIST));
+
+            int rowsInserted = preparedStatement.executeUpdate();
+            if (rowsInserted > 0) {
+                errorLogs.add("Successful registration.");
+                errorLogs.add("[" + name + "] has been registered.");
+                userExists = true;
+            } else {
+                errorLogs.add("Unsuccessful registration.");
+            }
+            preparedStatement.close();
+        }
+
+        message.setText(generateIntro(name, userExists));
+    }
+
+
+    private void generateEntriesEvent(String chatId, SendMessage message) {
+        try {
+            errorLogs.add("========= Entries Event Called ========= ");
+            //Get user_id key from users table
+            int userId = 0;
+
+            //Entries
+            String entries = "Here are your entries: \n";
+
+            //Selecting User from Users table.
+            String sql = "SELECT * FROM users WHERE chat_id = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, chatId);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                userId = resultSet.getInt("user_id");
+            }
+
+            errorLogs.add("The user_id is : " + userId);
+
+            //Using user_id to get entries from entries table
+            sql = "SELECT * FROM entries WHERE user_id=?";
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, userId);
+            resultSet = statement.executeQuery();
+            int count = 0;
+            while (resultSet.next()) {
+                errorLogs.add("Found an entry!");
+                count++;
+                String typeOfEntry = resultSet.getString("typeofentry");
+                String category = resultSet.getString("category");
+                String cost = resultSet.getString("cost");
+                String description = resultSet.getString("description");
+
+                if (typeOfEntry.equals("spend")) {
+                    entries += "<>  - $" + cost + " on " + category + "\n";
+                } else if (typeOfEntry.equals("earn")) {
+                    entries += "<>  + $" + cost + " from " + category + "\n";
+                }
+            }
+
+            entries += "Number of entries found: " + count;
+            message.setText(entries);
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+
+    }
+    private void generateEventStateOne(String command, SendMessage message, String typeOfEntry) {
+
+        errorLogs.add(" === Event State One Called === ");
+
+        if (command.equals("/spend")) {
+            message.setText("Alright, what did you spend on? [Input Category]");
+            typeOfEntry = "spend";
+
+        } else if (command.equals("/earn")) {
+            message.setText("Swee! Where did you earn this moolah? [Input Category]");
+            typeOfEntry = "earn";
+        }
+
+        entryList.add(typeOfEntry);
+
+    }
+
+    private void generateEventStateTwo(String text, SendMessage message, String typeOfEntry) {
+        errorLogs.add("========= Event State Two Called ========= ");
+
+        if (typeOfEntry.equals("spend")) {
+            entryList.add(text); //Getting the category
+            message.setText("Okay, how much did you spend on " + text + "? [Input Cost]");
+        } else if (typeOfEntry.equals("earn")) {
+            entryList.add(text); //Getting the category
+            message.setText("Okay, how much did you earn from " + text + "? [Input Earnings]");
+        } else {
+            message.setText("Uh oh.. Something broke.");
+        }
+    }
+
+    private void generateEventStateThree(String text, SendMessage message, String typeOfEntry) {
+        errorLogs.add("========= Event State Three Called ========= ");
+
+        if (typeOfEntry.equals("spend")) {
+            entryList.add(text); //Getting the cost
+            message.setText("$" + text + ", got it. Now, what's the story behind this? [Input Description]");
+        } else if (typeOfEntry.equals("earn")) {
+            entryList.add(text); //Getting the earnings
+            message.setText("$" + text +"! Nice! How do you feel earning $" + text + "? [Input Description]");
+        } else {
+            message.setText("Uh oh.. Something broke.");
+        }
+    }
+
+    private void generateEventStateFour(String text, SendMessage message, String typeOfEntry) {
+        errorLogs.add("========= Event State Four Called ========= ");
+        entryList.add(text); //Getting the description
+
+        if (typeOfEntry.equals("spend")) {
+            message.setText("Thanks! You have added a new entry: \nSpent $" + entryList.get(2) + " on " + entryList.get(1) + " - \"" + entryList.get(3) + "\"");
+        } else if (typeOfEntry.equals("earn")) {
+            message.setText("Thanks! You have added a new entry: \nEarned $" + entryList.get(2) + " from " + entryList.get(1) + " - Feeling: \"" + entryList.get(3) + "\"");
+        } else {
+            message.setText("Uh oh.. Something broke.");
+        }
+
+    }
+
+    private String generateIntro(String name, boolean userExists) {
+        errorLogs.add("Generating Intro... ");
+        String intro = "";
+
+        intro += "Hi " + name +
+                "! I am Bo Lui and I welcome you to Sir Brendan's financial tracker to track how deep your pockets are! Sir Brendan is my creator.\n\n";
+        intro += "For now, I am in the beta stages and so, I have very limited functionalities. I may crash on you. I probably will crash on you... " +
+                "But! Your opinion and feedback to the creator will surely improve my system, so thank you for using me! \n\n";
+        intro += "Enter: \"/\" to see what I can do...\n\n";
+
+        if (userExists) {
+            intro += "Yes! You have established a connection with the server. This connection is 24/7. All your data is saved into the database.\n";
+        } else {
+            intro += "Sorry! You have not established a connection with the server. Your data is not saved into the database. Try again later.\n ";
+        }
+
+        return intro;
+    }
+
+    private void updateEntriesList(String chatId) throws SQLException {
+        errorLogs.add("Updating Entries");
+        //================================= [Model]
+        //Thinking in terms of SQL, we need to create a row in entries table.
+
+        //Get entry list items from database
+        String entryList = "";
+        String entryType = "";
+        int selectedUserId = 0;
+
+        String sql = "SELECT * FROM users WHERE chat_id = ?";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setString(1, chatId);
+        ResultSet resultSet = statement.executeQuery();
+        while (resultSet.next()) { //Should only loop once
+            entryList = resultSet.getString("entry_list");
+            entryType = resultSet.getString("entry_type");
+            selectedUserId = resultSet.getInt("user_id");
+        }
+
+        //Clean up the entryList string into array and store the list items
+        String[] entryListArr = entryList.substring(1, entryList.length() - 1).split(", ");
+
+        //Insert entry into entries table
+
+        String category = entryListArr[0];
+        double cost = Double.parseDouble(entryListArr[1]);
+        String description = entryListArr[2];
+
+        errorLogs.add("Inserting " + entryType + " " + category + " " + cost + " " + description + " " + selectedUserId);
+
+        //Insert the entry into entries table.
+
+        sql = "INSERT INTO entries (typeOfEntry, category, cost, description, user_id) VALUES " +
+                "(?, ?, ?, ?, ?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, entryType);
+        preparedStatement.setString(2, category);
+        preparedStatement.setDouble(3, cost);
+        preparedStatement.setString(4, description);
+        preparedStatement.setInt(5, selectedUserId);
+
+        int rowsInserted = preparedStatement.executeUpdate();
+        if( rowsInserted > 0 ) {
+            errorLogs.add("[Entry List Insert] Insert query successful");
+        } else {
+            errorLogs.add("[Entry List Insert] Insert query unsuccessful");
+        }
+        preparedStatement.close();
+
+    }
+
+    private void cancelEntry(SendMessage message) {
+        message.setText("Entry cancelled.");
+        resetEntry();
+    }
+
+    private void resetEntry() {
+        entryList = new ArrayList<String>();
     }
 
     private void resetEntryList(String chatId) {
@@ -303,6 +550,24 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
+    private String getUserText(String chatId) {
+        String text = "";
+        try {
+            //Selecting User from Users table.
+            String sql = "SELECT * FROM users WHERE chat_id = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, chatId);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                text = resultSet.getString("text");
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        return text;
+    }
+
     private boolean getIsUserInputting(String chatId) {
         boolean isInputting = false;
         try {
@@ -421,253 +686,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
         return everythingGood;
     }
-
-    public void generateHelpEvent(SendMessage message) {
-        String log = "------ Generating Error Logs ------ \n";
-        for (String error : errorLogs) {
-            log += error + "\n";
-        }
-        message.setText(log);
-        errorLogs.clear();
-    }
-
-    public void generateStartEvent(String chatId, String name, String text, SendMessage message) throws URISyntaxException, SQLException {
-        errorLogs.add("=== Start Event Called === ");
-
-        //================================= [Model]
-        //Check if user already in database
-        boolean userExists = false;
-        String sql = "SELECT * FROM users WHERE chat_id = ?";
-        PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setString(1, chatId);
-        ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()) {
-            userExists = true;
-            String selectedName = resultSet.getString("name");
-            errorLogs.add("[" + selectedName + "] has been selected.");
-        }
-        statement.close();
-        resultSet.close();
-
-        //Insert into table users
-        if (!userExists) {
-            errorLogs.add("This user is not registered yet.");
-
-            sql = "INSERT INTO users (chat_id, name, event_state, is_inputting, text, entry_type, entry_list) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, chatId);
-            preparedStatement.setString(2, name);
-            preparedStatement.setInt(3, INITIAL_EVENT_STATE);
-            preparedStatement.setBoolean(4, INITIAL_IS_INPUTTING);
-            preparedStatement.setString(5, text);
-            preparedStatement.setString(6, INITIAL_ENTRY_TYPE);
-            preparedStatement.setString(7, Arrays.toString(INITIAL_ENTRY_LIST));
-
-            int rowsInserted = preparedStatement.executeUpdate();
-            if (rowsInserted > 0) {
-                errorLogs.add("Successful registration.");
-                errorLogs.add("[" + name + "] has been registered.");
-                userExists = true;
-            } else {
-                errorLogs.add("Unsuccessful registration.");
-            }
-            preparedStatement.close();
-        }
-
-        message.setText(generateIntro(name, userExists));
-    }
-
-
-    public void generateEntriesEvent(String chatId, SendMessage message) {
-        try {
-            errorLogs.add("========= Entries Event Called ========= ");
-            //Get user_id key from users table
-            int userId = 0;
-
-            //Entries
-            String entries = "Here are your entries: \n";
-
-            //Selecting User from Users table.
-            String sql = "SELECT * FROM users WHERE chat_id = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setString(1, chatId);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                userId = resultSet.getInt("user_id");
-            }
-
-            errorLogs.add("The user_id is : " + userId);
-
-            //Using user_id to get entries from entries table
-            sql = "SELECT * FROM entries WHERE user_id=?";
-            statement = connection.prepareStatement(sql);
-            statement.setInt(1, userId);
-            resultSet = statement.executeQuery();
-            int count = 0;
-            while (resultSet.next()) {
-                errorLogs.add("Found an entry!");
-                count++;
-                String typeOfEntry = resultSet.getString("typeofentry");
-                String category = resultSet.getString("category");
-                String cost = resultSet.getString("cost");
-                String description = resultSet.getString("description");
-
-                if (typeOfEntry.equals("spend")) {
-                    entries += "<>  - $" + cost + " on " + category + "\n";
-                } else if (typeOfEntry.equals("earn")) {
-                    entries += "<>  + $" + cost + " from " + category + "\n";
-                }
-            }
-
-            entries += "Number of entries found: " + count;
-            message.setText(entries);
-
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-
-
-    }
-    public void generateEventStateOne(String command, SendMessage message, String typeOfEntry) {
-
-        errorLogs.add(" === Event State One Called === ");
-
-        if (command.equals("/spend")) {
-            message.setText("Alright, what did you spend on? [Input Category]");
-            typeOfEntry = "spend";
-
-        } else if (command.equals("/earn")) {
-            message.setText("Swee! Where did you earn this moolah? [Input Category]");
-            typeOfEntry = "earn";
-        }
-
-        entryList.add(typeOfEntry);
-
-    }
-
-    public void generateEventStateTwo(String text, SendMessage message, String typeOfEntry) {
-        errorLogs.add("========= Event State Two Called ========= ");
-
-        if (typeOfEntry.equals("spend")) {
-            entryList.add(text); //Getting the category
-            message.setText("Okay, how much did you spend on " + text + "? [Input Cost]");
-        } else if (typeOfEntry.equals("earn")) {
-            entryList.add(text); //Getting the category
-            message.setText("Okay, how much did you earn from " + text + "? [Input Earnings]");
-        } else {
-            message.setText("Uh oh.. Something broke.");
-        }
-    }
-
-    public void generateEventStateThree(String text, SendMessage message, String typeOfEntry) {
-        errorLogs.add("========= Event State Three Called ========= ");
-
-        if (typeOfEntry.equals("spend")) {
-            entryList.add(text); //Getting the cost
-            message.setText("$" + text + ", got it. Now, what's the story behind this? [Input Description]");
-        } else if (typeOfEntry.equals("earn")) {
-            entryList.add(text); //Getting the earnings
-            message.setText("$" + text +"! Nice! How do you feel earning $" + text + "? [Input Description]");
-        } else {
-            message.setText("Uh oh.. Something broke.");
-        }
-    }
-
-    public void generateEventStateFour(String text, SendMessage message, String typeOfEntry) {
-        errorLogs.add("========= Event State Four Called ========= ");
-        entryList.add(text); //Getting the description
-
-        if (typeOfEntry.equals("spend")) {
-            message.setText("Thanks! You have added a new entry: \nSpent $" + entryList.get(2) + " on " + entryList.get(1) + " - \"" + entryList.get(3) + "\"");
-        } else if (typeOfEntry.equals("earn")) {
-            message.setText("Thanks! You have added a new entry: \nEarned $" + entryList.get(2) + " from " + entryList.get(1) + " - Feeling: \"" + entryList.get(3) + "\"");
-        } else {
-            message.setText("Uh oh.. Something broke.");
-        }
-
-    }
-
-    public String generateIntro(String name, boolean userExists) {
-        errorLogs.add("Generating Intro... ");
-        String intro = "";
-
-        intro += "Hi " + name +
-                "! I am Bo Lui and I welcome you to Sir Brendan's financial tracker to track how deep your pockets are! Sir Brendan is my creator.\n\n";
-        intro += "For now, I am in the beta stages and so, I have very limited functionalities. I may crash on you. I probably will crash on you... " +
-                "But! Your opinion and feedback to the creator will surely improve my system, so thank you for using me! \n\n";
-        intro += "Enter: \"/\" to see what I can do...\n\n";
-
-        if (userExists) {
-            intro += "Yes! You have established a connection with the server. This connection is 24/7. All your data is saved into the database.\n";
-        } else {
-            intro += "Sorry! You have not established a connection with the server. Your data is not saved into the database. Try again later.\n ";
-        }
-
-        return intro;
-    }
-
-    public void updateEntriesList(String chatId) throws SQLException {
-        errorLogs.add("Updating Entries");
-        //================================= [Model]
-        //Thinking in terms of SQL, we need to create a row in entries table.
-
-        //Get entry list items from database
-        String entryList = "";
-        String entryType = "";
-        int selectedUserId = 0;
-
-        String sql = "SELECT * FROM users WHERE chat_id = ?";
-        PreparedStatement statement = connection.prepareStatement(sql);
-        statement.setString(1, chatId);
-        ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()) { //Should only loop once
-            entryList = resultSet.getString("entry_list");
-            entryType = resultSet.getString("entry_type");
-            selectedUserId = resultSet.getInt("user_id");
-        }
-
-        //Clean up the entryList string into array and store the list items
-        String[] entryListArr = entryList.substring(1, entryList.length() - 1).split(", ");
-
-        //Insert entry into entries table
-
-        String category = entryListArr[0];
-        double cost = Double.parseDouble(entryListArr[1]);
-        String description = entryListArr[2];
-
-        errorLogs.add("Inserting " + entryType + " " + category + " " + cost + " " + description + " " + selectedUserId);
-
-        //Insert the entry into entries table.
-
-        sql = "INSERT INTO entries (typeOfEntry, category, cost, description, user_id) VALUES " +
-                "(?, ?, ?, ?, ?)";
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, entryType);
-        preparedStatement.setString(2, category);
-        preparedStatement.setDouble(3, cost);
-        preparedStatement.setString(4, description);
-        preparedStatement.setInt(5, selectedUserId);
-
-        int rowsInserted = preparedStatement.executeUpdate();
-        if( rowsInserted > 0 ) {
-            errorLogs.add("[Entry List Insert] Insert query successful");
-        } else {
-            errorLogs.add("[Entry List Insert] Insert query unsuccessful");
-        }
-        preparedStatement.close();
-
-    }
-
-    public void cancelEntry(SendMessage message) {
-        message.setText("Entry cancelled.");
-        resetEntry();
-    }
-
-    public void resetEntry() {
-        entryList = new ArrayList<String>();
-    }
-
+    
     private static Connection getConnection() throws URISyntaxException, SQLException {
         URI dbUri = new URI(System.getenv("DATABASE_URL"));
 
