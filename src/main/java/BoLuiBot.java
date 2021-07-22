@@ -370,6 +370,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
         //Insert into table users
         if (!userExists) {
+            errorLogs.add("This user is not registered yet.");
             sql = "INSERT INTO users (chat_id, name, event_state, is_inputting, entry_list, text, entry_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, chatId);
@@ -381,9 +382,14 @@ public class BoLuiBot extends TelegramLongPollingBot {
             preparedStatement.setString(7, INITIAL_ENTRY_TYPE);
 
             int rowsInserted = preparedStatement.executeUpdate();
-            userExists = rowsInserted > 0;
+            if (rowsInserted > 0) {
+                errorLogs.add("Successful registration.");
+                errorLogs.add("[" + name + "] has been registered.");
+                userExists = true;
+            } else {
+                errorLogs.add("Unsuccessful registration.");
+            }
             preparedStatement.close();
-            errorLogs.add("[" + name + "] has been registered.");
         }
 
         message.setText(generateIntro(name, userExists));
@@ -476,6 +482,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public String generateIntro(String name, boolean userExists) {
+        errorLogs.add("Generating Intro... ");
         String intro = "";
 
         intro += "Hi " + name +
