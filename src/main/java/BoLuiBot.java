@@ -371,13 +371,13 @@ public class BoLuiBot extends TelegramLongPollingBot {
         //Insert into table users
         if (!userExists) {
             errorLogs.add("This user is not registered yet.");
-            sql = "INSERT INTO users (chat_id, name, event_state, is_inputting, entry_list, text, entry_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            sql = "INSERT INTO users (chat_id, name, event_state, is_inputting, entry_list, text, entry_type) VALUES (?, ?, ?, ?, ?::json, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, chatId);
             preparedStatement.setString(2, name);
             preparedStatement.setInt(3, INITIAL_EVENT_STATE);
             preparedStatement.setBoolean(4, INITIAL_IS_INPUTTING);
-            preparedStatement.setObject(5, new String[3]);
+            preparedStatement.setObject(5, "food");
             preparedStatement.setString(6, text);
             preparedStatement.setString(7, INITIAL_ENTRY_TYPE);
 
