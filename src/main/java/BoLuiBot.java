@@ -1,12 +1,8 @@
-import javafx.scene.control.SpinnerValueFactory;
-import org.postgresql.util.PGobject;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import javax.swing.plaf.nimbus.State;
-import javax.xml.transform.Result;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.*;
