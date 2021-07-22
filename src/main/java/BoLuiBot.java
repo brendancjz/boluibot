@@ -439,12 +439,17 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 userId = resultSet.getString("user_id");
             }
 
+            errorLogs.add("The user_id is : " + userId);
+
             //Using user_id to get entries from entries table
             sql = "SELECT * FROM entries WHERE user_id=?";
             statement = connection.prepareStatement(sql);
             statement.setString(1, userId);
             resultSet = statement.executeQuery();
+            int count = 0;
             while (resultSet.next()) {
+                errorLogs.add("Found an entry!");
+                count++;
                 String typeOfEntry = resultSet.getString("typeofentry");
                 String category = resultSet.getString("category");
                 String cost = resultSet.getString("cost");
@@ -457,6 +462,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 }
             }
 
+            entries += "Number of entries found: " + count;
             message.setText(entries);
 
         } catch (SQLException throwables) {
