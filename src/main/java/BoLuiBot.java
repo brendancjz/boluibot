@@ -1,3 +1,4 @@
+import javafx.scene.control.SpinnerValueFactory;
 import org.postgresql.util.PGobject;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -46,6 +47,9 @@ public class BoLuiBot extends TelegramLongPollingBot {
         // Need to create a TOTAL Spendings and Earnings
         // Need to create Categories for users to select. e.g Food, Clothes, Gifts.
         // Need more commands to spice up user experience.
+        // Need to add more restrictions and helpers for the inputs. e.g Cost cannot have alphabets or symbols.
+        // Need to refactor the updating processes. SQL queries and program code must run seperate.
+        //
 
         // We check if the update has a message and the message has text
         try {
@@ -99,7 +103,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                             break;
                         case "/spend":
                         case "/earn":
-                            updateUserEntryType(chatId, text);
+                            updateUserEntryType(chatId, text); //Update entry type
                             generateEventStateOne(text, message, getUserEntryType(chatId));
                             updateUserEventState(chatId, currEventState);
                             updateIsUserInputting(chatId, isInputtingEntry);
@@ -112,47 +116,54 @@ public class BoLuiBot extends TelegramLongPollingBot {
                     }
 
                 } else if (!cancelCondition && text.charAt(0) == '/' && isInputtingEntry) { //User types a command while inputting
-                    message.setText("Sorry, something's wrong. Type /cancel to cancel entry and try again.");
+                    message.setText("Sorry, something's wrong. Type /cancel to cancel entry and try that command again.");
 
                 } else if (isInputtingEntry && currEventState == 2) {
                     if (cancelCondition) { //User cancels entry.
+                        //SQL Queries
+                        resetSystemToEventStateOne(chatId, isInputtingEntry);
+
+                        //Program Code
                         cancelEntry(message);
-                        updateUserEventState(chatId, FINAL_EVENT_STATE);
-                        updateIsUserInputting(chatId, isInputtingEntry);
-                        updateUserEntryType(chatId, RESET_ENTRY_TYPE);
-                        resetEntryList(chatId);
                     } else {
-                        generateEventStateTwo(text, message, entryType);
+                        //SQL Queries
                         addEntryListItem(chatId, text, currEventState);
                         updateUserEventState(chatId, currEventState);
+
+                        //Program Code
+                        generateEventStateTwo(text, message, entryType);
                     }
                 } else if (isInputtingEntry && currEventState == 3) {
                     if (cancelCondition) { //User cancels entry.
+                        //SQL Queries
+                        resetSystemToEventStateOne(chatId, isInputtingEntry);
+
+                        //Program Code
                         cancelEntry(message);
-                        updateUserEventState(chatId, FINAL_EVENT_STATE);
-                        updateIsUserInputting(chatId, isInputtingEntry);
-                        updateUserEntryType(chatId, RESET_ENTRY_TYPE);
-                        resetEntryList(chatId);
                     } else {
-                        generateEventStateThree(text, message, entryType);
+                        //SQL Queries
                         addEntryListItem(chatId, text, currEventState);
                         updateUserEventState(chatId, currEventState);
+
+                        //Program Code
+                        generateEventStateThree(text, message, entryType);
                     }
                 } else if (isInputtingEntry && currEventState == 4) {
                     if (cancelCondition) { //User cancels entry.
+                        //SQL Queries
+                        resetSystemToEventStateOne(chatId, isInputtingEntry);
+
+                        //Program Code
                         cancelEntry(message);
-                        updateUserEventState(chatId, FINAL_EVENT_STATE);
-                        updateIsUserInputting(chatId, isInputtingEntry);
-                        updateUserEntryType(chatId, RESET_ENTRY_TYPE);
-                        resetEntryList(chatId);
                     } else {
+                        //SQL Queries
                         addEntryListItem(chatId, text, currEventState);
-                        generateEventStateFour(chatId, message, entryType);
+                        String[] entryListArr = getEntryList(chatId);
                         updateEntriesList(chatId);
-                        updateUserEventState(chatId, currEventState);
-                        updateIsUserInputting(chatId, isInputtingEntry);
-                        updateUserEntryType(chatId, RESET_ENTRY_TYPE);
-                        resetEntryList(chatId);
+                        resetSystemToEventStateOne(chatId, isInputtingEntry);
+
+                        //Program Code
+                        generateEventStateFour(chatId, message, entryType, entryListArr);
                     }
 
                 } else {
@@ -166,6 +177,14 @@ public class BoLuiBot extends TelegramLongPollingBot {
         } catch (SQLException | TelegramApiException | URISyntaxException throwables) {
             throwables.printStackTrace();
         }
+    }
+
+    private void resetSystemToEventStateOne(String chatId, boolean isInputtingEntry) {
+        //SQL Queries
+        updateUserEventState(chatId, FINAL_EVENT_STATE);
+        updateIsUserInputting(chatId, isInputtingEntry);
+        updateUserEntryType(chatId, RESET_ENTRY_TYPE);
+        resetEntryList(chatId);
     }
 
     private void generateHelpEvent(SendMessage message) {
@@ -329,9 +348,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
-    private void generateEventStateFour(String chatId, SendMessage message, String typeOfEntry) throws SQLException {
+    private void generateEventStateFour(String chatId, SendMessage message, String typeOfEntry, String[] entryListArr) throws SQLException {
         errorLogs.add("========= Event State Four Called ========= ");
-        String[] entryListArr = getEntryList(chatId);
 
         if (typeOfEntry.equals("spend")) {
             message.setText("Thanks! You have added a new entry: \nSpent $" + entryListArr[1] + " on " + entryListArr[0] + " - \"" + entryListArr[2] + "\"");
