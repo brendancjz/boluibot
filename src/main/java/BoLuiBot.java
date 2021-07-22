@@ -44,6 +44,14 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        //TODO Finalise the idea for the JSON entry_list.
+        // For now, all commands are working. can Create, Add and Update. Need to do EDIT and DELETE.
+        // Need more functionalities for /cancel
+        // Need to create a TOTAL Spendings and Earnings
+        // Need to create Categories for users to select. e.g Food, Clothes, Gifts.
+        // Need more commands to spice up user experience.
+        // Fix /entries command
+
         // We check if the update has a message and the message has text
         try {
 
@@ -254,7 +262,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             } else if (command.equals("/earn")) {
                 entryType = "earn";
             } else {
-                entryType = command;
+                entryType = "error";
             }
 
             errorLogs.add("entry_type should now be: " + entryType);
@@ -265,7 +273,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             statement.setString(2, chatId);
             int rowsInserted = statement.executeUpdate();
             if ((rowsInserted > 0)) {
-                errorLogs.add("Update query successful.");
+                errorLogs.add("[entry_type] Update query successful.");
 
             } else {
                 errorLogs.add("Update query failed.");
@@ -321,10 +329,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 statement.setString(2, chatId);
                 int rowsInserted = statement.executeUpdate();
                 if ((rowsInserted > 0)) {
-                    errorLogs.add("Update query successful.");
+                    errorLogs.add("[text] Update query successful.");
                     everythingGood = true;
                 } else {
-                    errorLogs.add("Update query failed.");
+                    errorLogs.add("[text] Update query failed.");
                 }
             } else {
                 //4 If false, reject text and get them to type /start
@@ -343,7 +351,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public void generateHelpEvent(SendMessage message) {
-        String log = "";
+        String log = "------ Generating Error Logs ------ ";
         for (String error : errorLogs) {
             log += error + "\n";
         }
@@ -403,27 +411,48 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
 
-    public void generateEntriesEvent(SendMessage message) {
-        errorLogs.add("========= Entries Event Called ========= ");
+    public void generateEntriesEvent(SendMessage message, String chatId) {
+        try {
+            errorLogs.add("========= Entries Event Called ========= ");
+            //Get user_id key from users table
+            String userId = "";
 
-        String entries = "ENTRIES\n";
-        entries += "|---------------- \n";
-        for (ArrayList<String> entry : entriesList) {
+            //Entries
+            String entries = "Here are your entries: \n";
 
-            if (entry.get(0) == "spend") {
-                entries += "-> SPENT | " + entry.get(2) + " | " + entry.get(1) + " | " + entry.get(3) + "\n";
-            } else if (entry.get(0) == "earn") {
-                entries += "-> EARN | " + entry.get(2) + " | " + entry.get(1) + " | " + entry.get(3) + "\n";
+            //Selecting User from Users table.
+            String sql = "SELECT * FROM users WHERE chat_id = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, chatId);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                userId = resultSet.getString("user_id");
             }
 
-            entries += "|---------------- \n";
+            //Using user_id to get entries from entries table
+            sql = "SELECT * FROM entries WHERE user_id=?";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, userId);
+            resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                String typeOfEntry = resultSet.getString("typeofentry");
+                String category = resultSet.getString("category");
+                String cost = resultSet.getString("cost");
+                String description = resultSet.getString("description");
+
+                if (typeOfEntry.equals("spend")) {
+                    entries += "->  - $" + cost + " on " + category + "\n";
+                } else if (typeOfEntry.equals("earn")) {
+                    entries += "->  + $" + cost + " on " + category + "\n";
+                }
+            }
+
+            message.setChatId(entries);
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
 
-        if (entriesList.isEmpty()) {
-            message.setText("No Entries. Let's add one.");
-        } else {
-            message.setText(entries);
-        }
 
     }
     public void generateEventStateOne(String command, SendMessage message, String typeOfEntry) {
