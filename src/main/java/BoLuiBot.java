@@ -361,7 +361,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public void generateHelpEvent(SendMessage message) {
-        String log = "------ Generating Error Logs ------ ";
+        String log = "------ Generating Error Logs ------ \n";
         for (String error : errorLogs) {
             log += error + "\n";
         }
@@ -425,7 +425,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
         try {
             errorLogs.add("========= Entries Event Called ========= ");
             //Get user_id key from users table
-            String userId = "";
+            int userId = "";
 
             //Entries
             String entries = "Here are your entries: \n";
@@ -436,7 +436,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             statement.setString(1, chatId);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                userId = resultSet.getString("user_id");
+                userId = resultSet.getInt("user_id");
             }
 
             errorLogs.add("The user_id is : " + userId);
@@ -444,7 +444,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             //Using user_id to get entries from entries table
             sql = "SELECT * FROM entries WHERE user_id=?";
             statement = connection.prepareStatement(sql);
-            statement.setString(1, userId);
+            statement.setInt(1, userId);
             resultSet = statement.executeQuery();
             int count = 0;
             while (resultSet.next()) {
