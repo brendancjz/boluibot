@@ -425,7 +425,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
         try {
             errorLogs.add("========= Entries Event Called ========= ");
             //Get user_id key from users table
-            int userId = "";
+            int userId = 0;
 
             //Entries
             String entries = "Here are your entries: \n";
