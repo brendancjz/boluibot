@@ -370,7 +370,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
         //Insert into table users
         if (!userExists) {
-            sql = "INSERT INTO users (chat_id, name, event_state, is_inputting, entry_list, text) VALUES (?, ?, ?, ?, ?, ?)";
+            sql = "INSERT INTO users (chat_id, name, event_state, is_inputting, entry_list, text, entry_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, chatId);
             preparedStatement.setString(2, name);
