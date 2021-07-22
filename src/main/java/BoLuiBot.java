@@ -14,14 +14,15 @@ public class BoLuiBot extends TelegramLongPollingBot {
     private static final int INITIAL_EVENT_STATE = 1;
     private static final int FINAL_EVENT_STATE = 4;
     private static final boolean INITIAL_IS_INPUTTING = false;
-    private String typeOfEntry;
+    private static final ArrayList<String> INITIAL_ENTRY_LIST = new ArrayList<>();
+    private static final String INITIAL_ENTRY_TYPE = "null";
+    private static final String RESET_ENTRY_TYPE = "reset";
     private ArrayList<String> entryList;
     private final ArrayList<ArrayList<String>> entriesList;
     private final Connection connection;
     private final ArrayList<String> errorLogs;
 
     BoLuiBot() throws URISyntaxException, SQLException {
-        this.typeOfEntry = "";
         this.entryList = new ArrayList<>();
         this.entriesList = new ArrayList<>();
         this.connection = getConnection();
@@ -76,6 +77,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 //Get info from user *VERY IMPORTANT*
                 int currEventState = getUserEventState(chatId);
                 boolean isInputtingEntry = getIsUserInputting(chatId);
+                String entryType = getUserEntryType(chatId);
 
                 //Not impt stuff
                 boolean cancelCondition = text.length() >= 7 && text.substring(0, 7).equals("/cancel");
@@ -87,7 +89,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
                             generateEntriesEvent(message);
                             break;
                         default:
-                            generateEventStateOne(text, message);
+                            updateUserEntryType(chatId, text);
+                            generateEventStateOne(text, message, getUserEntryType(chatId));
                             updateUserEventState(chatId, currEventState);
                             updateIsUserInputting(chatId, isInputtingEntry);
                             break;
@@ -98,8 +101,9 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         cancelEntry(message);
                         updateUserEventState(chatId, FINAL_EVENT_STATE);
                         updateIsUserInputting(chatId, isInputtingEntry);
+                        updateUserEntryType(chatId, RESET_ENTRY_TYPE);
                     } else {
-                        generateEventStateTwo(text, message);
+                        generateEventStateTwo(text, message, entryType);
                         updateUserEventState(chatId, currEventState);
                     }
                 } else if (isInputtingEntry && currEventState == 3) {
@@ -107,8 +111,9 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         cancelEntry(message);
                         updateUserEventState(chatId, FINAL_EVENT_STATE);
                         updateIsUserInputting(chatId, isInputtingEntry);
+                        updateUserEntryType(chatId, RESET_ENTRY_TYPE);
                     } else {
-                        generateEventStateThree(text, message);
+                        generateEventStateThree(text, message, entryType);
                         updateUserEventState(chatId, currEventState);
                     }
                 } else if (isInputtingEntry && currEventState == 4) {
@@ -116,10 +121,12 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         cancelEntry(message);
                         updateUserEventState(chatId, FINAL_EVENT_STATE);
                         updateIsUserInputting(chatId, isInputtingEntry);
+                        updateUserEntryType(chatId, RESET_ENTRY_TYPE);
                     } else {
-                        generateEventStateFour(text, message, update);
+                        generateEventStateFour(text, message, update, entryType);
                         updateUserEventState(chatId, currEventState);
                         updateIsUserInputting(chatId, isInputtingEntry);
+                        updateUserEntryType(chatId, RESET_ENTRY_TYPE);
                         resetEntry();
 
                         errorLogs.add(entriesList.toString());
@@ -237,6 +244,56 @@ public class BoLuiBot extends TelegramLongPollingBot {
         return isInputting;
     }
 
+    private void updateUserEntryType(String chatId, String command) {
+        try {
+            errorLogs.add("==== Update User Entry Type ====");
+            String entryType = "";
+            if (command.equals("/spend")) {
+                entryType = "spend";
+            } else if (command.equals("/earn")) {
+                entryType = "earn";
+            } else {
+                entryType = command;
+            }
+
+            errorLogs.add("entry_type should now be: " + entryType);
+
+            String sql = "UPDATE users SET entry_type=? WHERE chat_id=? ";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, entryType);
+            statement.setString(2, chatId);
+            int rowsInserted = statement.executeUpdate();
+            if ((rowsInserted > 0)) {
+                errorLogs.add("Update query successful.");
+
+            } else {
+                errorLogs.add("Update query failed.");
+            }
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
+    private String getUserEntryType(String chatId) {
+        String entryType = "";
+        try {
+            //Selecting User from Users table.
+            String sql = "SELECT * FROM users WHERE chat_id = ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setString(1, chatId);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                entryType = resultSet.getString("entry_type");
+                errorLogs.add("[" + chatId + "] Current entry_type: " + entryType);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        return entryType;
+    }
+
     private boolean checkingQueryAndUser(SendMessage message, String chatId, String text) {
         boolean everythingGood = false;
 
@@ -285,12 +342,12 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     public void generateHelpEvent(SendMessage message) {
-        //TODO
         String log = "";
         for (String error : errorLogs) {
             log += error + "\n";
         }
         message.setText(log);
+        errorLogs.clear();
     }
 
     public void generateStartEvent(String chatId, String name, String text, SendMessage message) throws URISyntaxException, SQLException {
@@ -318,9 +375,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
             preparedStatement.setString(1, chatId);
             preparedStatement.setString(2, name);
             preparedStatement.setInt(3, INITIAL_EVENT_STATE);
-            preparedStatement.setBoolean(4, false);
-            preparedStatement.setObject(5, new String[4]);
+            preparedStatement.setBoolean(4, INITIAL_IS_INPUTTING);
+            preparedStatement.setObject(5, INITIAL_ENTRY_LIST);
             preparedStatement.setString(6, text);
+            preparedStatement.setString(7, INITIAL_ENTRY_TYPE);
 
             int rowsInserted = preparedStatement.executeUpdate();
             userExists = rowsInserted > 0;
@@ -355,8 +413,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
 
     }
-    public void generateEventStateOne(String command, SendMessage message) {
-        //TODO switch out this type of entry here and change it with CRUD. typeOfEntry becomes local variable
+    public void generateEventStateOne(String command, SendMessage message, String typeOfEntry) {
 
         errorLogs.add(" === Event State One Called === ");
 
@@ -373,7 +430,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     }
 
-    public void generateEventStateTwo(String text, SendMessage message) {
+    public void generateEventStateTwo(String text, SendMessage message, String typeOfEntry) {
         errorLogs.add("========= Event State Two Called ========= ");
 
         if (typeOfEntry.equals("spend")) {
@@ -387,7 +444,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
-    public void generateEventStateThree(String text, SendMessage message) {
+    public void generateEventStateThree(String text, SendMessage message, String typeOfEntry) {
         errorLogs.add("========= Event State Three Called ========= ");
 
         if (typeOfEntry.equals("spend")) {
@@ -401,10 +458,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
-    public void generateEventStateFour(String text, SendMessage message, Update update) throws SQLException {
+    public void generateEventStateFour(String text, SendMessage message, Update update, String typeOfEntry) throws SQLException {
         errorLogs.add("========= Event State Four Called ========= ");
         entryList.add(text); //Getting the description
-        boolean success = updateEntriesList(update);
+        boolean success = updateEntriesList(update, typeOfEntry);
         if (success) {
             if (typeOfEntry.equals("spend")) {
                 message.setText("Thanks! You have added a new entry: \nSpent $" + entryList.get(2) + " on " + entryList.get(1) + " - \"" + entryList.get(3) + "\"");
@@ -436,7 +493,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
         return intro;
     }
 
-    public boolean updateEntriesList(Update update) throws SQLException {
+    public boolean updateEntriesList(Update update, String typeOfEntry) throws SQLException {
         errorLogs.add("Updating Entries");
         //================================= [Model]
         //Thinking in terms of SQL, we need to create a row in entries table.
