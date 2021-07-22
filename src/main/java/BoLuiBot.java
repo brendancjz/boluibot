@@ -111,6 +111,9 @@ public class BoLuiBot extends TelegramLongPollingBot {
                             break;
                     }
 
+                } else if (!cancelCondition && text.charAt(0) == '/' && isInputtingEntry) { //User types a command while inputting
+                    message.setText("Sorry, something's wrong. Type /cancel to cancel entry and try again.");
+
                 } else if (isInputtingEntry && currEventState == 2) {
                     if (cancelCondition) { //User cancels entry.
                         cancelEntry(message);
