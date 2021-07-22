@@ -143,8 +143,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         updateUserEntryType(chatId, RESET_ENTRY_TYPE);
                         resetEntryList(chatId);
                     } else {
-                        generateEventStateFour(chatId, message, entryType);
                         addEntryListItem(chatId, text, currEventState);
+                        generateEventStateFour(chatId, message, entryType);
                         updateEntriesList(chatId);
                         updateUserEventState(chatId, currEventState);
                         updateIsUserInputting(chatId, isInputtingEntry);
