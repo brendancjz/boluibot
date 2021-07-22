@@ -334,14 +334,29 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     private void generateEventStateThree(String text, SendMessage message, String typeOfEntry) {
         errorLogs.add("========= Event State Three Called ========= ");
+        if (text.charAt(0) == '$') text = text.substring(1, text.length());
 
-        if (typeOfEntry.equals("spend")) {
+        boolean isNum = isNumeric(text);
+
+        if (typeOfEntry.equals("spend") && isNum) {
             message.setText("$" + text + ", got it. Now, what's the story behind this? [Input Description]");
-        } else if (typeOfEntry.equals("earn")) {
-            message.setText("$" + text +"! Nice! How do you feel earning $" + text + "? [Input Description]");
+        } else if (typeOfEntry.equals("earn") && isNum) {
+            message.setText("Nice! How do you feel earning $" + text + "? [Input Description]");
         } else {
-            message.setText("Uh oh.. Something broke.");
+            message.setText("Uh oh.. Input was not recognised. Did you keep it numeric? Try it again.");
         }
+    }
+
+    private static boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            double d = Double.parseDouble(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
     private void generateEventStateFour(String chatId, SendMessage message, String typeOfEntry, String[] entryListArr) throws SQLException {
@@ -363,9 +378,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
         intro += "Hi " + name +
                 "! I am Bo Lui and I welcome you to Sir Brendan's financial tracker to track how deep your pockets are! Sir Brendan is my creator.\n\n";
+        intro += "I am your personal finance bot! I store your spendings and earnings in a simple way.\n\n";
         intro += "For now, I am in the beta stages and so, I have very limited functionalities. I may crash on you. I probably will crash on you... " +
                 "But! Your opinion and feedback to the creator will surely improve my system, so thank you for using me! \n\n";
-        intro += "Enter: \"/\" to see what I can do...\n\n";
+        intro += "Enter: /help to see what I can do...\n\n";
 
         if (userExists) {
             intro += "Yes! You have established a connection with the server. This connection is 24/7. All your data is saved into the database.\n";
