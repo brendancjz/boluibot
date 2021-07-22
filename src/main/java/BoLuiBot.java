@@ -72,6 +72,10 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         generateErrorLogsEvent(message);
                         execute(message);
                         return; //Code ends here
+                    case "/help":
+                        generateHelpEvent(message);
+                        execute(message);
+                        return; //Code ends here
                     default:
                         break;
                 }
@@ -105,7 +109,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
                             break;
 
                         default:
-
                             //unknown command
                             message.setText("Oops, unknown command. Let's try another.");
                             break;
