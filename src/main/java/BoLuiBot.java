@@ -377,7 +377,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             preparedStatement.setString(2, name);
             preparedStatement.setInt(3, INITIAL_EVENT_STATE);
             preparedStatement.setBoolean(4, INITIAL_IS_INPUTTING);
-            preparedStatement.setObject(5, INITIAL_ENTRY_LIST);
+            preparedStatement.setObject(5, new String[3]);
             preparedStatement.setString(6, text);
             preparedStatement.setString(7, INITIAL_ENTRY_TYPE);
 
