@@ -63,9 +63,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 message.setChatId(update.getMessage().getChatId().toString());
 
                 String text = update.getMessage().getText();
-                message.setText(text + " - BoLui"); //Echo text
-                execute(message);
-
 
                 String chatId = update.getMessage().getChatId().toString();
                 String name = update.getMessage().getChat().getFirstName();
