@@ -44,7 +44,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
         // Need to create Categories for users to select. e.g Food, Clothes, Gifts.
         // Need more commands to spice up user experience.
         // Need to add more restrictions and helpers for the inputs. e.g Cost cannot have alphabets or symbols.
-        // Need to refactor the updating processes. SQL queries and program code must run seperate.
+        // Need to refactor the updating processes. SQL queries and program code must run separate.
         //
 
         // We check if the update has a message and the message has text
@@ -99,10 +99,13 @@ public class BoLuiBot extends TelegramLongPollingBot {
                             break;
                         case "/spend":
                         case "/earn":
+                            //SQL Queries
                             updateUserEntryType(chatId, text); //Update entry type
-                            generateEventStateOne(text, message, getUserEntryType(chatId));
                             updateUserEventState(chatId, currEventState);
                             updateIsUserInputting(chatId, isInputtingEntry);
+
+                            //Program Code
+                            generateEventStateOne(text, message, getUserEntryType(chatId));
                             break;
 
                         default:
@@ -142,8 +145,11 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
                         //SQL Queries
                         if (isNum) {
+                            errorLogs.add("---- text is numeric");
                             addEntryListItem(chatId, text, currEventState);
                             updateUserEventState(chatId, currEventState);
+                        } else {
+                            errorLogs.add("---- text is not numeric");
                         }
 
                         //Program Code
