@@ -39,14 +39,21 @@ public class BoLuiBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         //TODO
-        // For now, all commands are working. can Create, Add and Update. Need to do EDIT and DELETE.
-        // Need to create a TOTAL Spendings and Earnings
-        // Need to create Categories for users to select. e.g Food, Clothes, Gifts.
+        // For now, all commands are working. can Create, Add and Update. Need to do EDIT and DELETE. (HIGH)
+        // Analysis related: (/entries)
+        // Need to create a TOTAL Spendings and Earnings (HIGH)
+        // Need to create spending/earnings categorised by Categories (LOW)
+        // Need to create spending/earnings categorised by Date (e.g. weekly, monthly) (LOW)
+        // Need to create spending/earnings categorised by amts (LOW)
+        // UIUX
+        // Need to add more restrictions and helpers for the inputs. e.g Cost cannot have alphabets or symbols, Irregardless of upper/lower case for categories (HIGH)
+        // Need to create Categories for users to select. e.g Food, Clothes, Gifts, Transport. (Either buttons or auto detect) (MED)
+        // Allow user to choose language for Telebot (sassy mode (e.g. EH STOP SPENDING), cat (e.g. how much kibble did you earn)) (SUPER LOW)
         // Need more commands to spice up user experience.
-        // Need to add more restrictions and helpers for the inputs. e.g Cost cannot have alphabets or symbols.
-        // Need to refactor the updating processes. SQL queries and program code must run separate.
-        //
-
+        // Need to refactor the updating processes. SQL queries and program code must run separate. (HIGH)
+        // /Bill for user to key in recurring payment (LOW)
+        // /Setgoal for user to set target amount spend for each category (LOW)
+        
         // We check if the update has a message and the message has text
         try {
 
@@ -199,6 +206,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 "I accept your entries with commands /spend or /earn. I keep track of your spendings and earnings " +
                 "in a very straight forward way. To view your inputted entries, type /entries. \n\n" +
                 "Made a mistake while inputting an entry? Type /cancel to reset it. \n\n" +
+                "Inputs Types \n - Category e.g Food, Gifts, Clothes \n - Cost e.g $12.34, 12.34, $1234\n - Comment e.g bought pizza for lunch\n\n"+
                 "For now, I cannot edit your created entries or even delete them! Don't worry though, I will soon :)\n\n\n" +
                 "Last thing, I enjoy being a parrot. I will echo your latest message whenever I feel like it...");
     }
