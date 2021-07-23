@@ -137,12 +137,17 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         //Program Code
                         cancelEntry(message);
                     } else {
+                        //Verifying...
+                        boolean isNum = isNumeric(text);
+
                         //SQL Queries
-                        addEntryListItem(chatId, text, currEventState);
-                        updateUserEventState(chatId, currEventState);
+                        if (isNum) {
+                            addEntryListItem(chatId, text, currEventState);
+                            updateUserEventState(chatId, currEventState);
+                        }
 
                         //Program Code
-                        generateEventStateThree(text, message, entryType);
+                        generateEventStateThree(text, message, entryType, isNum);
                     }
                 } else if (isInputtingEntry && currEventState == 4) {
                     if (cancelCondition) { //User cancels entry.
@@ -332,11 +337,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
-    private void generateEventStateThree(String text, SendMessage message, String typeOfEntry) {
+    private void generateEventStateThree(String text, SendMessage message, String typeOfEntry, boolean isNum) {
         errorLogs.add("========= Event State Three Called ========= ");
-        if (text.charAt(0) == '$') text = text.substring(1, text.length());
-
-        boolean isNum = isNumeric(text);
 
         if (typeOfEntry.equals("spend") && isNum) {
             message.setText("$" + text + ", got it. Now, what's the story behind this? [Input Description]");
@@ -348,6 +350,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     private static boolean isNumeric(String strNum) {
+        if (strNum.charAt(0) == '$') strNum = strNum.substring(1);
+
         if (strNum == null) {
             return false;
         }
