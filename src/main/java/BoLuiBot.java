@@ -142,14 +142,12 @@ public class BoLuiBot extends TelegramLongPollingBot {
                     } else {
                         //Verifying...
                         boolean isNum = isNumeric(text);
+                        errorLogs.add("isNumeric: " + text + " " + isNum);
 
                         //SQL Queries
                         if (isNum) {
-                            errorLogs.add("---- text is numeric");
                             addEntryListItem(chatId, text, currEventState);
                             updateUserEventState(chatId, currEventState);
-                        } else {
-                            errorLogs.add("---- text is not numeric");
                         }
 
                         //Program Code
@@ -345,6 +343,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     private void generateEventStateThree(String text, SendMessage message, String typeOfEntry, boolean isNum) {
         errorLogs.add("========= Event State Three Called ========= ");
+        if (text.charAt(0) == '$') text = text.substring(1);
 
         if (typeOfEntry.equals("spend") && isNum) {
             message.setText("$" + text + ", got it. Now, what's the story behind this? [Input Description]");
@@ -538,12 +537,12 @@ public class BoLuiBot extends TelegramLongPollingBot {
     private void updateUserEventState(String chatId, int eventState) {
         try {
             //Increment because new event state
-            errorLogs.add("Currently, event State is " + eventState);
             if (eventState == 4) {
                 eventState = 1;
             } else {
                 eventState++;
             }
+            errorLogs.add("-- Updating User Event State -- It is now: " + eventState);
 
             String sql = "UPDATE users SET event_state=? WHERE chat_id=? ";
             PreparedStatement statement = connection.prepareStatement(sql);
@@ -563,7 +562,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
     }
 
     private int getUserEventState(String chatId) {
-        //errorLogs.add(" === getUserEventState called === ");
+        errorLogs.add("-- Getting User Event State --");
 
         int eventState = 0;
 
