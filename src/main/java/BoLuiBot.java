@@ -141,17 +141,18 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         cancelEntry(message);
                     } else {
                         //Verifying...
-                        boolean isNum = isNumeric(text);
-                        errorLogs.add("isNumeric: " + text + " " + isNum);
+                        String cost = removingDollarSign(text);
+                        boolean isNum = isNumeric(cost);
+                        errorLogs.add("isNumeric: " + cost + " " + isNum);
 
                         //SQL Queries
                         if (isNum) {
-                            addEntryListItem(chatId, text, currEventState);
+                            addEntryListItem(chatId, cost, currEventState);
                             updateUserEventState(chatId, currEventState);
                         }
 
                         //Program Code
-                        generateEventStateThree(text, message, entryType, isNum);
+                        generateEventStateThree(cost, message, entryType, isNum);
                     }
                 } else if (isInputtingEntry && currEventState == 4) {
                     if (cancelCondition) { //User cancels entry.
@@ -343,7 +344,6 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     private void generateEventStateThree(String text, SendMessage message, String typeOfEntry, boolean isNum) {
         errorLogs.add("========= Event State Three Called ========= ");
-        if (text.charAt(0) == '$') text = text.substring(1);
 
         if (typeOfEntry.equals("spend") && isNum) {
             message.setText("$" + text + ", got it. Now, what's the story behind this? [Input Description]");
@@ -354,8 +354,15 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
+    private String removingDollarSign(String text) {
+        if (text.charAt(0) == '$') {
+            return text.substring(1);
+        } else {
+            return text;
+        }
+    }
+
     private static boolean isNumeric(String strNum) {
-        if (strNum.charAt(0) == '$') strNum = strNum.substring(1);
 
         if (strNum == null) {
             return false;
@@ -514,7 +521,13 @@ public class BoLuiBot extends TelegramLongPollingBot {
             //Clean the entry list string to be an array
             String[] tempArr = entryList.substring(1, entryList.length() - 1).split(", ");
             //Update tempArr with new list item
-            tempArr[currEventState - 2] = text;
+            //If currEventState is 3, The text is Cost. So it has to be Double.
+            if (currEventState == 3) {
+                tempArr[currEventState - 2] = text;
+            } else {
+                tempArr[currEventState - 2] = text;
+            }
+
 
             //Update entry_list
             sql = "UPDATE users SET entry_list=? WHERE chat_id=? ";
