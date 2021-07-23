@@ -299,7 +299,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 String typeOfEntry = resultSet.getString("typeofentry");
                 String category = resultSet.getString("category");
                 String cost = resultSet.getString("cost");
-                String description = resultSet.getString("description");
+                String comment = resultSet.getString("comment");
 
                 if (typeOfEntry.equals("spend")) {
                     entries += "   <" + count + ">  - $" + cost + " on " + category + "\n";
@@ -354,9 +354,9 @@ public class BoLuiBot extends TelegramLongPollingBot {
         errorLogs.add("========= Event State Three Called ========= ");
 
         if (typeOfEntry.equals("spend") && isNum) {
-            message.setText("$" + text + ", got it. Now, what's the story behind this? [Input Description]");
+            message.setText("$" + text + ", got it. Now, what's the story behind this? [Input Comment]");
         } else if (typeOfEntry.equals("earn") && isNum) {
-            message.setText("Nice! How do you feel earning $" + text + "? [Input Description]");
+            message.setText("Nice! How do you feel earning $" + text + "? [Input Comment]");
         } else {
             message.setText("Uh oh.. Input was not recognised. Did you keep it numeric? Try it again.");
         }
@@ -460,19 +460,19 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
         String category = entryListArr[0];
         double cost = Double.parseDouble(entryListArr[1]);
-        String description = entryListArr[2];
+        String comment = entryListArr[2];
 
-        errorLogs.add("Inserting " + entryType + " " + category + " " + cost + " " + description + " " + selectedUserId);
+        errorLogs.add("Inserting " + entryType + " " + category + " " + cost + " " + comment + " " + selectedUserId);
 
         //Insert the entry into entries table.
 
-        sql = "INSERT INTO entries (typeOfEntry, category, cost, description, user_id) VALUES " +
+        sql = "INSERT INTO entries (typeOfEntry, category, cost, comment, user_id) VALUES " +
                 "(?, ?, ?, ?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setString(1, entryType);
         preparedStatement.setString(2, category);
         preparedStatement.setDouble(3, cost);
-        preparedStatement.setString(4, description);
+        preparedStatement.setString(4, comment);
         preparedStatement.setInt(5, selectedUserId);
 
         int rowsInserted = preparedStatement.executeUpdate();
