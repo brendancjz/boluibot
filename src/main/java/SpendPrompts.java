@@ -22,6 +22,22 @@ class Prompts {
         prompts.add("What did you spend on? Worth not? [Input Category]");
         prompts.add("What did you spend on?  [Input Category]");
     }
+
+    public static String generateEventTwoSpendPrompt(String cost) {
+        genListOfEventTwoSpendPrompts(cost);
+        int idx = (int) (Math.random() * prompts.size());
+        return prompts.get(idx);
+    }
+
+    private static void genListOfEventTwoSpendPrompts(String cost) {
+        prompts.clear();
+        prompts.add("Okay, how much did you spend on " + cost + "? [Input Cost]");
+        prompts.add("Alright and how much did you spend on " + cost + "? [Input Cost]");
+        prompts.add(cost + "? Nice! How much did you spend on it? [Input Cost]");
+        prompts.add(cost + "? Okay okay! How much did you pay? [Input Cost]");
+
+    }
+
     public static String generateEventOneEarnPrompt() {
         genListOfEventOneEarnPrompts();
         int idx = (int) (Math.random() * prompts.size());

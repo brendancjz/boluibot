@@ -87,7 +87,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                     default:
                         break;
                 }
-                
+
                 //When received a text, check the sender of this text and update text into database.
                 boolean isCheckGood = checkingQueryAndUser(message, chatId, text);
                 errorLogs.add("Received text and Checking user... isCheckGood " + isCheckGood);
@@ -235,8 +235,8 @@ public class BoLuiBot extends TelegramLongPollingBot {
         ResultSet resultSet = statement.executeQuery();
         while (resultSet.next()) {
             userExists = true;
-            String selectedName = resultSet.getString("name");
-            errorLogs.add("[" + selectedName + "] has been selected.");
+            String selectedChatId = resultSet.getString("chat_id");
+            errorLogs.add("[" + selectedChatId + "] has been selected.");
         }
         statement.close();
         resultSet.close();
@@ -245,16 +245,15 @@ public class BoLuiBot extends TelegramLongPollingBot {
         if (!userExists) {
             errorLogs.add("This user is not registered yet.");
 
-            sql = "INSERT INTO users (chat_id, name, event_state, is_inputting, text, entry_type, entry_list) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            sql = "INSERT INTO users (chat_id, event_state, is_inputting, text, entry_type, entry_list) " +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, chatId);
-            preparedStatement.setString(2, name);
-            preparedStatement.setInt(3, INITIAL_EVENT_STATE);
-            preparedStatement.setBoolean(4, INITIAL_IS_INPUTTING);
-            preparedStatement.setString(5, text);
-            preparedStatement.setString(6, INITIAL_ENTRY_TYPE);
-            preparedStatement.setString(7, Arrays.toString(INITIAL_ENTRY_LIST));
+            preparedStatement.setInt(2, INITIAL_EVENT_STATE);
+            preparedStatement.setBoolean(3, INITIAL_IS_INPUTTING);
+            preparedStatement.setString(4, text);
+            preparedStatement.setString(5, INITIAL_ENTRY_TYPE);
+            preparedStatement.setString(6, Arrays.toString(INITIAL_ENTRY_LIST));
 
             int rowsInserted = preparedStatement.executeUpdate();
             if (rowsInserted > 0) {
@@ -340,13 +339,13 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     }
 
-    private void generateEventStateTwo(String text, SendMessage message, String typeOfEntry) {
+    private void generateEventStateTwo(String cost, SendMessage message, String typeOfEntry) {
         errorLogs.add("========= Event State Two Called ========= ");
 
         if (typeOfEntry.equals("spend")) {
-            message.setText("Okay, how much did you spend on " + text + "? [Input Cost]");
+            message.setText("Okay, how much did you spend on " + cost + "? [Input Cost]");
         } else if (typeOfEntry.equals("earn")) {
-            message.setText("Okay, how much did you earn from " + text + "? [Input Earnings]");
+            message.setText("Okay, how much did you earn from " + cost + "? [Input Earnings]");
         } else {
             message.setText("Uh oh.. Something broke.");
         }
@@ -733,8 +732,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
             while (resultSet.next()) {
                 userExists = true;
                 String selectedChatId = resultSet.getString("chat_id");
-                String selectedName = resultSet.getString("name");
-                errorLogs.add("[" + selectedChatId + " " + selectedName + "] has been selected.");
+                errorLogs.add("[" + selectedChatId + "] has been selected.");
             }
 
             //3. If TRUE, Store text into database of this user.
