@@ -28,12 +28,12 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "bo_lui_bot";
+        return "bolui_testbot";
     }
 
     @Override
     public String getBotToken() {
-        return "1763203814:AAFbCkdniUC5EJpiLMb3Uq5GUIP7xj60Mpw";
+        return "1928314499:AAGZ9EiwAKlh-QmtfgifV6F7YxWY7Q3kkF0";
     }
 
     @Override
