@@ -38,6 +38,20 @@ class Prompts {
 
     }
 
+    public static String generateEventThreeSpendPrompt(String cost) {
+        genListOfEventThreeSpendPrompts(cost);
+        int idx = (int) (Math.random() * prompts.size());
+        return prompts.get(idx);
+    }
+
+    private static void genListOfEventThreeSpendPrompts(String cost) {
+        prompts.clear();
+        prompts.add("$" + cost + ", got it. Now, what's the story behind this? [Input Comment]");
+        prompts.add("$" + cost + ", got it. Let's add a comment to this. [Input Comment]");
+        prompts.add("$" + cost + ", got it. Can you elaborate on this? [Input Comment]");
+        prompts.add("$" + cost + ", got it. Let's make a comment for this entry! [Input Comment]");
+    }
+
     public static String generateEventOneEarnPrompt() {
         genListOfEventOneEarnPrompts();
         int idx = (int) (Math.random() * prompts.size());
@@ -72,6 +86,19 @@ class Prompts {
         prompts.add("Awesome! How much did you earn from " + category + "? [Input Earnings]");
         prompts.add("Got it from " + category + "? Nice man, how did you earn? [Input Earnings]");
         prompts.add("That's wassup man! That's my man! How much did you earn from " + category + "? [Input Earnings]");
+
+    }
+
+    public static String generateEventThreeEarnPrompt(String cost) {
+        genListOfEventThreeEarnPrompts(cost);
+        int idx = (int) (Math.random() * prompts.size());
+        return prompts.get(idx);
+    }
+    private static void genListOfEventThreeEarnPrompts(String cost) {
+        prompts.clear();
+        prompts.add("Nice! How do you feel earning $" + cost + "? [Input Comment]");
+        prompts.add("Wow that's a lot! How do you feel earning $" + cost + "? [Input Comment]");
+        prompts.add(cost + "?? Brooo, that's sick! How do you feel about earning this much? [Input Comment]");
 
     }
 

@@ -350,13 +350,15 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
-    private void generateEventStateThree(String text, SendMessage message, String typeOfEntry, boolean isNum) {
+    private void generateEventStateThree(String cost, SendMessage message, String typeOfEntry, boolean isNum) {
         errorLogs.add("========= Event State Three Called ========= ");
 
         if (typeOfEntry.equals("spend") && isNum) {
-            message.setText("$" + text + ", got it. Now, what's the story behind this? [Input Comment]");
+            String prompt = Prompts.generateEventThreeSpendPrompt(cost);
+            message.setText(prompt);
         } else if (typeOfEntry.equals("earn") && isNum) {
-            message.setText("Nice! How do you feel earning $" + text + "? [Input Comment]");
+            String prompt = Prompts.generateEventThreeEarnPrompt(cost);
+            message.setText(prompt);
         } else {
             message.setText("Uh oh.. Input was not recognised. Did you keep it numeric? Try it again.");
         }
