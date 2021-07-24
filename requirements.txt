@@ -1,6 +1,0 @@
-org.telegram.telegrambots.meta.TelegramBotsApi
-org.telegram.telegrambots.meta.exceptions.TelegramApiException
-org.telegram.telegrambots.updatesreceivers.DefaultBotSession
-org.telegram.telegrambots.bots.TelegramLongPollingBot
-org.telegram.telegrambots.meta.api.methods.send.SendMessage
-org.telegram.telegrambots.meta.exceptions.TelegramApiException
