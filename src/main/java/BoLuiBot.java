@@ -24,16 +24,14 @@ public class BoLuiBot extends TelegramLongPollingBot {
         this.errorLogs = new ArrayList<>();
     }
 
-
-
     @Override
     public String getBotUsername() {
-        return "bolui_testbot";
+        return "bo_lui_bot";
     }
 
     @Override
     public String getBotToken() {
-        return "1928314499:AAGZ9EiwAKlh-QmtfgifV6F7YxWY7Q3kkF0";
+        return "1763203814:AAFbCkdniUC5EJpiLMb3Uq5GUIP7xj60Mpw";
     }
 
     @Override
