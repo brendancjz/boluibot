@@ -208,7 +208,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 "Made a mistake while inputting an entry? Type /cancel to reset it. \n\n" +
                 "Inputs Types \n - Category e.g Food, Gifts, Clothes \n - Cost e.g $12.34, 12.34, $1234\n - Comment e.g bought pizza for lunch\n\n"+
                 "For now, I cannot edit your created entries or even delete them! Don't worry though, I will soon :)\n\n\n" +
-                "Last thing, I enjoy being a parrot. I will echo your latest message whenever I feel like it...");
+                "Last thing, I will sometimes echo your latest message...");
     }
 
     private void generateErrorLogsEvent(SendMessage message) {
