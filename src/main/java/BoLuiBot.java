@@ -153,13 +153,16 @@ public class BoLuiBot extends TelegramLongPollingBot {
                         errorLogs.add("isNumeric: " + cost + " " + isNum);
 
                         //SQL Queries
+                        addEntryListItem(chatId, cost, currEventState);
+                        String[] entryListArr = getEntryList(chatId);
+
                         if (isNum) {
-                            addEntryListItem(chatId, cost, currEventState);
+                            //SQL Queries
                             updateUserEventState(chatId, currEventState);
                         }
 
                         //Program Code
-                        generateEventStateThree(cost, message, entryType, isNum);
+                        generateEventStateThree(message, entryType, isNum, entryListArr);
                     }
                 } else if (isInputtingEntry && currEventState == 4) {
                     if (cancelCondition) { //User cancels entry.
@@ -350,17 +353,19 @@ public class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
-    private void generateEventStateThree(String cost, SendMessage message, String typeOfEntry, boolean isNum) {
+    private void generateEventStateThree(SendMessage message, String typeOfEntry, boolean isNum, String[] entryListArr) throws TelegramApiException {
         errorLogs.add("========= Event State Three Called ========= ");
 
         if (typeOfEntry.equals("spend") && isNum) {
-            String prompt = Prompts.generateEventThreeSpendPrompt(cost);
+            String prompt = Prompts.generateEventThreeSpendPrompt(entryListArr[1]);
             message.setText(prompt);
         } else if (typeOfEntry.equals("earn") && isNum) {
-            String prompt = Prompts.generateEventThreeEarnPrompt(cost);
+            String prompt = Prompts.generateEventThreeEarnPrompt(entryListArr[1]);
             message.setText(prompt);
         } else {
             message.setText("Uh oh.. Input was not recognised. Did you keep it numeric? Try it again.");
+            execute(message);
+            generateEventStateTwo(entryListArr[0], message, typeOfEntry);
         }
     }
 
