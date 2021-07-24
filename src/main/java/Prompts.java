@@ -23,18 +23,18 @@ class Prompts {
         prompts.add("What did you spend on?  [Input Category]");
     }
 
-    public static String generateEventTwoSpendPrompt(String cost) {
-        genListOfEventTwoSpendPrompts(cost);
+    public static String generateEventTwoSpendPrompt(String category) {
+        genListOfEventTwoSpendPrompts(category);
         int idx = (int) (Math.random() * prompts.size());
         return prompts.get(idx);
     }
 
-    private static void genListOfEventTwoSpendPrompts(String cost) {
+    private static void genListOfEventTwoSpendPrompts(String category) {
         prompts.clear();
-        prompts.add("Okay, how much did you spend on " + cost + "? [Input Cost]");
-        prompts.add("Alright and how much did you spend on " + cost + "? [Input Cost]");
-        prompts.add(cost + "? Nice! How much did you spend on it? [Input Cost]");
-        prompts.add(cost + "? Okay okay! How much did you pay? [Input Cost]");
+        prompts.add("Okay, how much did you spend on " + category + "? [Input Cost]");
+        prompts.add("Alright and how much did you spend on " + category + "? [Input Cost]");
+        prompts.add(category + "? Nice! How much did you spend on it? [Input Cost]");
+        prompts.add(category + "? Okay okay! How much did you pay? [Input Cost]");
 
     }
 
@@ -59,10 +59,20 @@ class Prompts {
         prompts.add("You're finessing life dude! Where did you earn this money from? [Input Category]");
         prompts.add("I hope you didn't steal this! Where did you get this loot from? [Input Category]");
 
-
-
-
     }
 
+    public static String generateEventTwoEarnPrompt(String category) {
+        genListOfEventTwoEarnPrompts(category);
+        int idx = (int) (Math.random() * prompts.size());
+        return prompts.get(idx);
+    }
+    private static void genListOfEventTwoEarnPrompts(String category) {
+        prompts.clear();
+        prompts.add("Okay, how much did you earn from " + category + "? [Input Earnings]");
+        prompts.add("Awesome! How much did you earn from " + category + "? [Input Earnings]");
+        prompts.add("Got it from " + category + "? Nice man, how did you earn? [Input Earnings]");
+        prompts.add("That's wassup man! That's my man! How much did you earn from " + category + "? [Input Earnings]");
+
+    }
 
 }

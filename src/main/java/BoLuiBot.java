@@ -206,7 +206,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                 "I keep track of your spendings and earnings in a very straight forward way. You can enter your entries with commands /spend or /earn. " +
                 "To view your inputted entries, type /entries. \n\n" +
                 "Made a mistake while inputting an entry? Type /cancel to reset it. \n\n" +
-                "Inputs Types \n - Category e.g Food, Gifts, Clothes \n - Cost e.g $12.34, 12.34, $1234\n - Comment e.g bought pizza for lunch\n\n"+
+                "Inputs Types \n - Category e.g Food, Gifts, Clothes \n - Cost/Earnings e.g $12.34, $1234\n - Comment e.g Bought pizza for lunch\n\n"+
                 "For now, I cannot edit your created entries or even delete them! Don't worry though, I will soon :)\n\n\n" +
                 "Last thing, I will sometimes echo your latest message...");
     }
@@ -336,13 +336,15 @@ public class BoLuiBot extends TelegramLongPollingBot {
 
     }
 
-    private void generateEventStateTwo(String cost, SendMessage message, String typeOfEntry) {
+    private void generateEventStateTwo(String category, SendMessage message, String typeOfEntry) {
         errorLogs.add("========= Event State Two Called ========= ");
 
         if (typeOfEntry.equals("spend")) {
-            message.setText("Okay, how much did you spend on " + cost + "? [Input Cost]");
+            String prompt = Prompts.generateEventTwoSpendPrompt(category);
+            message.setText(prompt);
         } else if (typeOfEntry.equals("earn")) {
-            message.setText("Okay, how much did you earn from " + cost + "? [Input Earnings]");
+            String prompt = Prompts.generateEventTwoEarnPrompt(category);
+            message.setText(prompt);
         } else {
             message.setText("Uh oh.. Something broke.");
         }
