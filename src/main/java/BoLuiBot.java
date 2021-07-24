@@ -45,7 +45,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
         // Need to create spending/earnings categorised by Categories (LOW)
         // Need to create spending/earnings categorised by Date (e.g. weekly, monthly) (LOW)
         // Need to create spending/earnings categorised by amts (LOW)
-        // UIUX
+        // UIUX : Need to find out if we can see how long the text will be. With that, we can format the text such that it will look good. (MED)
         // Need to add more restrictions and helpers for the inputs. e.g Cost cannot have alphabets or symbols, Irregardless of upper/lower case for categories (HIGH)
         // Need to create Categories for users to select. e.g Food, Clothes, Gifts, Transport. (Either buttons or auto detect) (MED)
         // Allow user to choose language for Telebot (sassy mode (e.g. EH STOP SPENDING), cat (e.g. how much kibble did you earn)) (SUPER LOW)
