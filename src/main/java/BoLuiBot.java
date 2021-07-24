@@ -203,7 +203,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
     private void generateHelpEvent(SendMessage message) {
 
         message.setText("Hello! Here's a quick intro to what I can do. \n\n" +
-                "I keep track of your spendings and earnings in a very straight forward way. I accept your entries with commands /spend or /earn. " +
+                "I keep track of your spendings and earnings in a very straight forward way. You can enter your entries with commands /spend or /earn. " +
                 "To view your inputted entries, type /entries. \n\n" +
                 "Made a mistake while inputting an entry? Type /cancel to reset it. \n\n" +
                 "Inputs Types \n - Category e.g Food, Gifts, Clothes \n - Cost e.g $12.34, 12.34, $1234\n - Comment e.g bought pizza for lunch\n\n"+
