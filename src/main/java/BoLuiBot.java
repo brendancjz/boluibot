@@ -183,7 +183,7 @@ public class BoLuiBot extends TelegramLongPollingBot {
                     }
 
                 } else {
-                    message.setText(text + " - BoLui"); //Echo text
+                    message.setText(text + " - Bo"); //Echo text
                 }
 
 
