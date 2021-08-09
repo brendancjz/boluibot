@@ -853,6 +853,7 @@ public class PSQL {
     // yearMonth favoured over LocalDate because yearMonth can be crafted with integer year and date values 
     // -- ease of viewing other months data.
     public String getMonthFinancials(int chatId, YearMonth yearMonth) throws SQLException {
+
         String fEntry = "<b>" + yearMonth.getMonth()+ " Money Flow</b>\n\n";
         ResultSet resultSet = getUsersDataResultSet(chatId);
 
@@ -862,8 +863,9 @@ public class PSQL {
         }
 
         double totalSpending = 0, totalEarning = 0;
+        errorLogs.add("Before SPENDEARN RESULTSET");
         resultSet = getMonthSpendEarnResultSet(userId, yearMonth.getYear(), yearMonth.getMonthValue());
-        
+        errorLogs.add("After SPENDEARN RESULTSET");
         while (resultSet.next()){
             totalSpending = resultSet.getDouble("total_spending");
             totalEarning = resultSet.getDouble("total_earning");
