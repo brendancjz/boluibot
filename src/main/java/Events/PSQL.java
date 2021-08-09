@@ -901,7 +901,11 @@ public class PSQL {
         ResultSet resultSet = statement.executeQuery();
 
         if (!resultSet.isBeforeFirst()) {
-            addNewFinancials(userId, year, month);
+            if (getAddNewFinancialsValid(userId, year, month)){
+                addNewFinancialsYear(userId, year, month);
+            } else {
+                addNewFinancials(userId, year, month);
+            }
             return getMonthSpendEarnResultSet(userId, year, month);
         } else {
             return resultSet;
@@ -944,6 +948,36 @@ public class PSQL {
         preparedStatement.setInt(5, month);
         preparedStatement.executeUpdate();
 
+    }
+
+    /**
+     * 
+     * @param userId
+     * @param year
+     * @param month
+     * @return
+     * @throws SQLException
+     */
+
+    private boolean getAddNewFinancialsValid(int userId, int year, int month) throws SQLException{
+        YearMonth currYearMonth = YearMonth.of(year, month);
+        YearMonth plusYearMonth = currYearMonth.plusMonths(12);
+
+        String sql = "SELECT * FROM financials WHERE user_id = ? and year >= ? and year <= ? and month >= ? and month <= ?"; 
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setInt(1, userId);
+        statement.setInt(2, currYearMonth.getYear());
+        statement.setInt(3, currYearMonth.getMonthValue());
+        statement.setInt(2, plusYearMonth.getYear());
+        statement.setInt(3, plusYearMonth.getMonthValue());
+        ResultSet resultSet = statement.executeQuery();
+        
+        //If no result financial records found for the next year (including current month)
+        if (!resultSet.isBeforeFirst()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

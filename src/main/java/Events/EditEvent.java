@@ -47,24 +47,22 @@ public class EditEvent extends Event{
         switch (currEventState - 1) { //Very important
             case 1:
                 super.getErrorLogs().add(" === Events.Event State One Called === ");
-                message.setText(Prompts.generateEventOneEditPrompt());
+                int numEntries = psql.getAllEntries(chatId).size();
+                if (numEntries > 0){
+                    message.setText(Prompts.generateEventOneEditPrompt());
+                } else {
+                    message.setText(Prompts.generateNoEntriesToEditPrompt());
+                    resetSystemToEventStateOne(chatId, true);
+                }
                 break;
             case 2:
                 super.getErrorLogs().add("========= Events.Event State Two Called ========= ");
-                int numEntries = psql.getAllEntries(chatId).size();
-                super.getErrorLogs().add("Num entries: " + numEntries);
-                if (numEntries > 0){
                     if (isNumericAndPositive(entryList[0]) && psql.checkEntryCountRange(chatId, Integer.parseInt(entryList[0]))) {
                         message.setText(Prompts.generateEventTwoEditPrompt());
                     } else {
                         psql.updateUserEventState(chatId, 1); //Decrement Events.Event State
                         message.setText(Prompts.generateInputtingEntryNumErrorPrompt(entryList[0]));
                     }
-                } else {
-                    message.setText(Prompts.generateNoEntriesToEditPrompt());
-                    resetSystemToEventStateOne(chatId, true);
-                }
-
                 break;
             case 3:
                 super.getErrorLogs().add("========= Events.Event State Three Called ========= ");
