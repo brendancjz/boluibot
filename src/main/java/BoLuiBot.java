@@ -190,12 +190,18 @@ class BoLuiBot extends TelegramLongPollingBot {
 
     private void executeCallbackEvent(Event event, EditMessageText newMessage, SendMessage message) throws SQLException, TelegramApiException, URISyntaxException {
         event.generateEvent();
-        event.generateOtherEvents();
+        String msg = message.toString();
         event.updateDatabase(); //NOTE THAT UPDATE DATABASE IS AFTER GENERATE EVENT (FOR THE DELETE EVENT)
         if (!(newMessage.getText() == null)){ //cannot execute empty newMessage
             execute(newMessage);
         }
         execute(message);
+
+        event.generateOtherEvents();
+        if (!msg.equals(message.toString())) { //Only proceed down if message changed.
+            errorLogs.add("Message has changed");
+            execute(message);
+        }
     }
 
     private void executeEvent(Event event, SendMessage message) throws SQLException, TelegramApiException, URISyntaxException {
