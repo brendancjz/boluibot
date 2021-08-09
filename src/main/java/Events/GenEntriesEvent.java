@@ -77,7 +77,6 @@ public class GenEntriesEvent extends Event{
 
         }
 
-
         entries += "\n<em>No. of entries found: <b>" + totalEntrycount + "</b></em>";
 
         super.getMessage().setText(entries);
