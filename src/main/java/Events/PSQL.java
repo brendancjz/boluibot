@@ -54,7 +54,7 @@ public class PSQL {
                 userId = resultSet.getInt("user_id");
             }
 
-            addNewFinancials(userId, currentYear, currentMonth);
+            addNewFinancialsYear(userId, currentYear, currentMonth);
         }
 
     }
@@ -914,7 +914,7 @@ public class PSQL {
      * @return Returns the ResultSet object to be used to obtain data
      * @throws SQLException Throws an exception when query is unsuccessful
      */
-    private void addNewFinancials(int userId, int year, int month) throws SQLException {
+    private void addNewFinancialsYear(int userId, int year, int month) throws SQLException {
         YearMonth insertYearMonth = YearMonth.of(year, month);
         String sql;
         PreparedStatement preparedStatement;
@@ -931,6 +931,18 @@ public class PSQL {
             insertYearMonth = insertYearMonth.plusMonths(1);
             errorLogs.add("YearMonth: " + insertYearMonth.toString());
         }
+
+    }
+
+    private void addNewFinancials(int userId, int year, int month) throws SQLException {
+        String sql = "INSERT INTO financials (total_spending, total_earning, user_id, year, month) VALUES (? ,?, ?, ?, ?)";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setDouble(1, INITIAL_FINANCIAL_VALUE);
+        preparedStatement.setDouble(2, INITIAL_FINANCIAL_VALUE);
+        preparedStatement.setInt(3, userId);
+        preparedStatement.setInt(4, year);
+        preparedStatement.setInt(5, month);
+        preparedStatement.executeUpdate();
 
     }
 

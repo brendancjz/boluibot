@@ -51,7 +51,8 @@ public class EditEvent extends Event{
                 break;
             case 2:
                 super.getErrorLogs().add("========= Events.Event State Two Called ========= ");
-                int numEntries = super.getPSQL().getAllEntries(super.getChatId()).size();
+                int numEntries = psql.getAllEntries(chatId).size();
+                super.getErrorLogs().add("Num entries: " + numEntries);
                 if (numEntries > 0){
                     if (isNumericAndPositive(entryList[0]) && psql.checkEntryCountRange(chatId, Integer.parseInt(entryList[0]))) {
                         message.setText(Prompts.generateEventTwoEditPrompt());
