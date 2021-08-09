@@ -866,6 +866,7 @@ public class PSQL {
         errorLogs.add("Before SPENDEARN RESULTSET");
         resultSet = getMonthSpendEarnResultSet(userId, yearMonth.getYear(), yearMonth.getMonthValue());
         errorLogs.add("After SPENDEARN RESULTSET");
+
         while (resultSet.next()){
             totalSpending = resultSet.getDouble("total_spending");
             totalEarning = resultSet.getDouble("total_earning");
@@ -973,7 +974,7 @@ public class PSQL {
      */
 
     private boolean getAddNewFinancialsValid(int userId, int year, int month) throws SQLException{
-        String sql = "SELECT * FROM financials WHERE user_id = ? and ((year = ? and month >= ?) or (year = ? and month <= ?)"; 
+        String sql = "SELECT * FROM financials WHERE user_id = ? and ((year = ? and month >= ?) or (year = ? and month <= ?))"; 
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.setInt(1, userId);
         statement.setInt(2, year);
