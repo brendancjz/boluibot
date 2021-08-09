@@ -51,12 +51,17 @@ public class EditEvent extends Event{
                 break;
             case 2:
                 super.getErrorLogs().add("========= Events.Event State Two Called ========= ");
-                if (isNumericAndPositive(entryList[0]) && psql.checkEntryCountRange(chatId, Integer.parseInt(entryList[0]))) {
-                    message.setText(Prompts.generateEventTwoEditPrompt());
+                int numEntries = super.getPSQL().getAllEntries(super.getChatId()).size();
+                if (numEntries > 0){
+                    if (isNumericAndPositive(entryList[0]) && psql.checkEntryCountRange(chatId, Integer.parseInt(entryList[0]))) {
+                        message.setText(Prompts.generateEventTwoEditPrompt());
+                    } else {
+                        psql.updateUserEventState(chatId, 1); //Decrement Events.Event State
+                        message.setText(Prompts.generateInputtingEntryNumErrorPrompt(entryList[0]));
+                    }
                 } else {
                     psql.updateUserEventState(chatId, 1); //Decrement Events.Event State
-
-                    message.setText(Prompts.generateInputtingEntryNumErrorPrompt(entryList[0]));
+                    message.setText(Prompts.generateNoEntriesToEditPrompt());
                 }
 
                 break;

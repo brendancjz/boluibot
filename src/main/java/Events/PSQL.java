@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.YearMonth;
 import java.util.HashMap;
 
@@ -914,15 +915,19 @@ public class PSQL {
      * @throws SQLException Throws an exception when query is unsuccessful
      */
     private void addNewFinancials(int userId, int year, int month) throws SQLException {
-
-        String sql = "INSERT INTO financials (total_spending, total_earning, user_id, year, month) VALUES (? ,?, ?, ?, ?)";
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setDouble(1, INITIAL_FINANCIAL_VALUE);
-        preparedStatement.setDouble(2, INITIAL_FINANCIAL_VALUE);
-        preparedStatement.setInt(3, userId);
-        preparedStatement.setInt(4, year);
-        preparedStatement.setInt(5, month);
-        preparedStatement.executeQuery();
+        YearMonth insertYearMonth = YearMonth.of(year, month);
+        //inserting a year worth of data
+        for (int i = 0; i < 12; i++){
+            String sql = "INSERT INTO financials (total_spending, total_earning, user_id, year, month) VALUES (? ,?, ?, ?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setDouble(1, INITIAL_FINANCIAL_VALUE);
+            preparedStatement.setDouble(2, INITIAL_FINANCIAL_VALUE);
+            preparedStatement.setInt(3, userId);
+            preparedStatement.setInt(4, insertYearMonth.getYear());
+            preparedStatement.setInt(5, insertYearMonth.getMonthValue());
+            preparedStatement.executeQuery();
+            insertYearMonth = insertYearMonth.plusMonths(1);
+        }
 
     }
 
