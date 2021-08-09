@@ -170,7 +170,7 @@ class BoLuiBot extends TelegramLongPollingBot {
                     event = new Events.GenDelInlineKeyboardEvent(message, newMessage, errorLogs, Integer.parseInt(chatId), callData);
                     newMessage.enableHtml(true);
                 } else if (callData.startsWith("entry")){
-                    
+
 
                 }
 
@@ -190,6 +190,7 @@ class BoLuiBot extends TelegramLongPollingBot {
 
     private void executeCallbackEvent(Event event, EditMessageText newMessage, SendMessage message) throws SQLException, TelegramApiException, URISyntaxException {
         event.generateEvent();
+        event.updateDatabase();
         if (!(newMessage.getText() == null)){ //cannot execute empty newMessage
             execute(newMessage);
         }
