@@ -30,24 +30,8 @@ public class GenEntriesInlineKeyboardEvent extends Event{
     }
 
     public void setTargetYearMonth(String callData){
-        //Moving from accessing DB (only one set of data) to accessing info from the unique keyboard generated
-        //example of callData: fin_yyyy_MM, fin_refresh_yyyy_MM
         String[] cdArray = callData.split("_");
-        //To navigate to current month's financials
-        if (cdArray[1].equals("revert")){ 
-            this.targetYM = YearMonth.of(LocalDate.now().getYear(), LocalDate.now().getMonth());
-        }
-        // To refresh current financials (perhaps after adding new entry) 
-        else if (cdArray[1].equals("refresh")){
-            this.targetYM = YearMonth.of(Integer.parseInt(cdArray[2]), Integer.parseInt(cdArray[3])); 
-        } else {
-            this.targetYM = YearMonth.of(Integer.parseInt(cdArray[1]) , Integer.parseInt(cdArray[2]));
-        }
-    }
-
-    public void setTargetYM(YearMonth yearMonth){
-        this.targetYM = yearMonth;
-
+        this.targetYM = YearMonth.of(Integer.parseInt(cdArray[1]) , Integer.parseInt(cdArray[2]));
     }
 
 }

@@ -15,10 +15,15 @@ import java.time.YearMonth;
 public class GenEntriesEvent extends Event{
     private final String[] sCategory = {"Entertainment","Food","Gift","Shopping","Transport", "Utilities"}; //can be an event class attribute because it can be used for other events!!
     private final String[] eCategory = {"Allowance", "Income", "Investment"};
+    private final String NO_ENTRY_STRING = "<code>---- no entry ---- </code>\n\n";
+    private final String OTHERS_STRING = "<em>Others</em>\n";
+    private final String SPENDING_STRING = "\n<b>-------- SPENDINGS --------</b>\n\n";
+    private final String EARNING_STRING = "\n<b>-------- EARNINGS --------</b>\n\n";
     private final LocalDate dateToday;
     private YearMonth targetYM;
     private LocalDate targetStartDate;
     private LocalDate targetEndDate;
+
 
 
     public GenEntriesEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
@@ -31,105 +36,18 @@ public class GenEntriesEvent extends Event{
 
     @Override
     public void generateEvent() throws SQLException {
-        ArrayList<String> allCategory;
-        int totalEntrycount = 0;
-
-        //SQL Query
-        // entryList[0] : All spending entries sorted by Categories stored in Hashmap
-        // entryList[1] : All earning entries sorted by Categories stored in Hashmap
-        ArrayList<HashMap<String,String>> entryList = super.getPSQL().getAllEntriesMonth(super.getChatId(), targetStartDate, targetEndDate);
-
-        String entries = "<b>" + this.dateToday.getMonth() + " Entries</b> \n";
-
-        HashMap<String,String> hashEntry = entryList.get(0);
-
-        //keeping track of total number of entries
-        totalEntrycount += Integer.parseInt(hashEntry.get("count"));
-        hashEntry.remove("count");
-
-        entries +=       "\n<b>-------- SPENDINGS --------</b>\n\n";
-        allCategory = new ArrayList<>(Arrays.asList(sCategory));
-
-        //outputting for big seven categories IF DONT WANT OUTPUT ALL CATEGORIES, can just make use of iterator to go through hashmap
-        for (String cat : allCategory) {
-            if (hashEntry.containsKey(cat)) {
-                entries += "<b>" + cat + "</b>\n";
-                entries += hashEntry.get(cat);
-                entries += "\n";
-                hashEntry.remove(cat);
-            } else {
-                entries += "<b>" + cat + "</b>\n";
-                entries += "<code>---- no entry ---- </code>\n\n";
-            }
-        }
-
-            entries += "<em>Others</em>\n";
-
-
-            if (hashEntry.size() == 0){
-                entries += "<code>---- no entry ---- </code>\n\n";
-            }
-
-        for (Map.Entry<String, String> stringStringEntry : hashEntry.entrySet()) {
-            String category = (stringStringEntry).getKey();
-            entries += "<b>" + category + "</b>\n";
-            entries += hashEntry.get(category);
-
-        }
-
-        entries += "\n<em>No. of entries found: <b>" + totalEntrycount + "</b></em>";
-
+        String entryType = "spend";
+        HashMap<String,String> entryList = super.getPSQL().getMonthSortedEntries(super.getChatId(), entryType, targetStartDate, targetEndDate);
+        String entries = getFormattedEntries(entryList, SPENDING_STRING, sCategory);
         super.getMessage().setText(entries);
     }
 
     @Override
     public void generateOtherEvents() throws SQLException {
-        ArrayList<String> allCategory;
-        int totalEntrycount = 0;
+        String entryType = "earn";
+        HashMap<String,String> entryList = super.getPSQL().getMonthSortedEntries(super.getChatId(), entryType, targetStartDate, targetEndDate);
+        String entries = getFormattedEntries(entryList, EARNING_STRING, eCategory);
 
-        //SQL Query
-        // entryList[0] : All spending entries sorted by Categories stored in Hashmap
-        // entryList[1] : All earning entries sorted by Categories stored in Hashmap
-        ArrayList<HashMap<String,String>> entryList = super.getPSQL().getAllEntriesMonth(super.getChatId(), targetStartDate, targetEndDate);
-
-        String entries = "";
-
-        HashMap<String,String> hashEntry = entryList.get(1);
-
-        //keeping track of total number of entries
-        totalEntrycount += Integer.parseInt(hashEntry.get("count"));
-        hashEntry.remove("count");
-
-        entries +=       "\n<b>-------- EARNINGS --------</b>\n\n";
-        allCategory = new ArrayList<>(Arrays.asList(eCategory));
-
-        //outputting for big seven categories IF DONT WANT OUTPUT ALL CATEGORIES, can just make use of iterator to go through hashmap
-        for (String cat : allCategory) {
-            if (hashEntry.containsKey(cat)) {
-                entries += "<b>" + cat + "</b>\n";
-                entries += hashEntry.get(cat);
-                entries += "\n";
-                hashEntry.remove(cat);
-            } else {
-                entries += "<b>" + cat + "</b>\n";
-                entries += "<code>---- no entry ---- </code>\n\n";
-            }
-        }
-
-        entries += "<em>Others</em>\n";
-
-        if (hashEntry.size() == 0){
-            entries += "<code>---- no entry ---- </code>\n\n";
-        }
-
-        for (Map.Entry<String, String> stringStringEntry : hashEntry.entrySet()) {
-            String category = ((stringStringEntry).getKey());
-            entries += "<b>" + category + "</b>\n";
-            entries += hashEntry.get(category);
-
-        }
-
-        entries += "\n<em>No. of entries found: <b>" + totalEntrycount + "</b></em>";
         super.getMessage().setText(entries);
         super.getMessage().setReplyMarkup(GetInlineKeyboardMarkup.entriesKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
     }
@@ -162,6 +80,49 @@ public class GenEntriesEvent extends Event{
 
         entries += "\n<em>No. of entries found: <b>" + entryList.size() + "</b></em>";
         super.getMessage().setText(entries);
+    }
+
+    private String getFormattedEntries(HashMap<String,String> hashEntry, String entryTypeString, String [] categoriesArray){
+        ArrayList<String> allCategory;;
+
+        String entries = "";
+
+        //keeping track of total number of entries
+        int totalEntrycount = Integer.parseInt(hashEntry.get("count"));
+        hashEntry.remove("count");
+
+        entries +=       entryTypeString;
+        allCategory = new ArrayList<>(Arrays.asList(categoriesArray));
+
+        //outputting for big seven categories IF DONT WANT OUTPUT ALL CATEGORIES, can just make use of iterator to go through hashmap
+        for (String cat : allCategory) {
+            if (hashEntry.containsKey(cat)) {
+                entries += "<b>" + cat + "</b>\n";
+                entries += hashEntry.get(cat);
+                entries += "\n";
+                hashEntry.remove(cat);
+            } else {
+                entries += "<b>" + cat + "</b>\n";
+                entries += NO_ENTRY_STRING;
+            }
+        }
+
+        entries += OTHERS_STRING ;
+
+        if (hashEntry.size() == 0){
+            entries += NO_ENTRY_STRING;
+        }
+
+        for (Map.Entry<String, String> stringStringEntry : hashEntry.entrySet()) {
+            String category = ((stringStringEntry).getKey());
+            entries += "<b>" + category + "</b>\n";
+            entries += hashEntry.get(category);
+
+        }
+
+        entries += "\n<em>No. of entries found: <b>" + totalEntrycount + "</b></em>";
+
+        return entries;
     }
 
 

@@ -517,7 +517,7 @@ public class PSQL {
 
 
     //sorts by category and returns in hashmap
-    public HashMap<String,String> getSortedEntries (int chatId, String entryType, LocalDate startDate, LocalDate endDate) throws SQLException {
+    public HashMap<String,String> getMonthSortedEntries (int chatId, String entryType, LocalDate startDate, LocalDate endDate) throws SQLException {
         String[] sCategory = {"Entertainment","Food","Gift","Shopping","Transport", "Utilities"}; //can be an event class attribute
         String[] eCategory = {"Income", "Allowance", "Investment"};
         ArrayList<String> allCategory = entryType.equals("spend") ? new ArrayList<>(Arrays.asList(sCategory)) : new ArrayList<>(Arrays.asList(eCategory));
@@ -621,25 +621,7 @@ public class PSQL {
         }
 
         return entryList;
-    }
-
-    public ArrayList<HashMap<String,String>> getAllEntriesMonth(int chatId, LocalDate startDate, LocalDate endDate) throws SQLException {
-
-        ArrayList<HashMap<String,String>> entryList = new ArrayList<>();
-        String spend = "spend";
-        String earn = "earn";
-        entryList.add(getSortedEntries(chatId, spend, startDate, endDate));
-        entryList.add(getSortedEntries(chatId, earn, startDate, endDate));
-
-        if (entryList.size() > 0) {
-            errorLogs.add("[Entries] Select query successful.");
-        } else {
-            errorLogs.add("[Entries] Select query unsuccessful.");
-        }
-
-        return entryList;
-    }
-    
+    }    
 
     private ResultSet getEntrybyTypeResultSet(int chatId, String entryType, LocalDate startDate, LocalDate endDate) throws SQLException {
         errorLogs.add("Doing query...");

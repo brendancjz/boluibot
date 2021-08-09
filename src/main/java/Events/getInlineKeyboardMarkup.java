@@ -60,18 +60,6 @@ class GetInlineKeyboardMarkup {
         keyboard.add(row);
         row = new ArrayList<>();
 
-        InlineKeyboardButton button3 = new InlineKeyboardButton();
-        button3.setText("this month");
-        button3.setCallbackData("entry_revert");
-        row.add(button3);
-
-        InlineKeyboardButton button4 = new InlineKeyboardButton();
-        button4.setText("refresh");
-        button4.setCallbackData("entry_refresh_" + currMonth.getYear() + "_" + currMonth.getMonthValue());
-        row.add(button4);
-
-        keyboard.add(row);
-
         InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
         inlineKeyboard.setKeyboard(keyboard);
         return inlineKeyboard;
