@@ -60,8 +60,8 @@ public class EditEvent extends Event{
                         message.setText(Prompts.generateInputtingEntryNumErrorPrompt(entryList[0]));
                     }
                 } else {
-                    psql.updateUserEventState(chatId, 1); //Decrement Events.Event State
                     message.setText(Prompts.generateNoEntriesToEditPrompt());
+                    resetSystemToEventStateOne(chatId, true);
                 }
 
                 break;
