@@ -54,7 +54,7 @@ public class PSQL {
                 userId = resultSet.getInt("user_id");
             }
 
-            addNewFinancials(userId, currentYear, currentMonth);
+            addNewFinancialsYear(userId, currentYear, currentMonth);
         }
 
     }
@@ -863,9 +863,7 @@ public class PSQL {
         }
 
         double totalSpending = 0, totalEarning = 0;
-        errorLogs.add("Before SPENDEARN RESULTSET");
         resultSet = getMonthSpendEarnResultSet(userId, yearMonth.getYear(), yearMonth.getMonthValue());
-        errorLogs.add("After SPENDEARN RESULTSET");
 
         while (resultSet.next()){
             totalSpending = resultSet.getDouble("total_spending");
@@ -913,13 +911,8 @@ public class PSQL {
         ResultSet resultSet = statement.executeQuery();
 
         if (!resultSet.isBeforeFirst()) {
-            if (getAddNewFinancialsValid(userId, year, month)){
-                errorLogs.add("NO ENTRY EXIST FOR NEXT YEAR!!");
-                addNewFinancials(userId, year, month);
-            } else {
-                errorLogs.add("SOME ENTRY EXIST FOR NEXT YEAR!!");
-                addNewFinancials(userId, year, month);
-            }
+            errorLogs.add("SOME ENTRY EXIST FOR NEXT YEAR!!");
+            addNewFinancials(userId, year, month);
             return getMonthSpendEarnResultSet(userId, year, month);
         } else {
             return resultSet;
