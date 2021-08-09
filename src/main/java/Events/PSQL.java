@@ -916,10 +916,12 @@ public class PSQL {
      */
     private void addNewFinancials(int userId, int year, int month) throws SQLException {
         YearMonth insertYearMonth = YearMonth.of(year, month);
+        String sql;
+        PreparedStatement preparedStatement;
         //inserting a year worth of data
         for (int i = 0; i < 12; i++){
-            String sql = "INSERT INTO financials (total_spending, total_earning, user_id, year, month) VALUES (? ,?, ?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            sql = "INSERT INTO financials (total_spending, total_earning, user_id, year, month) VALUES (? ,?, ?, ?, ?)";
+            preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setDouble(1, INITIAL_FINANCIAL_VALUE);
             preparedStatement.setDouble(2, INITIAL_FINANCIAL_VALUE);
             preparedStatement.setInt(3, userId);
