@@ -44,7 +44,6 @@ public class GenDelInlineKeyboardEvent extends Event{
             } else {
                 this.editMessage.setText("Error. Cannot delete. Type /delete to try again.");  
             }
-       
         } else if (delConfirm){
             if (currEventState == 2 && entryType.equals("delete")){ 
                 this.editMessage.setText(super.getPSQL().getDeleteEntryByTime(super.getChatId(), this.targetStartDate, this.targetEndDate));
