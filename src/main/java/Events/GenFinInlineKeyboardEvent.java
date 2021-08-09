@@ -26,7 +26,6 @@ public class GenFinInlineKeyboardEvent extends Event{
         String monthFinancials = super.getPSQL().getMonthFinancials(super.getChatId(), this.targetYM);
         //The goal is to move information from DB to the unique keyboard that is generated. Because relying on DB can only provide one information.
         this.editMessage.setText(monthFinancials);  
-        super.getErrorLogs().add(monthFinancials);
         this.editMessage.setReplyMarkup(Events.GetInlineKeyboardMarkup.financeKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
     }
 

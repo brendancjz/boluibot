@@ -189,7 +189,6 @@ class BoLuiBot extends TelegramLongPollingBot {
     private void executeCallbackEvent(Event event, EditMessageText newMessage, SendMessage message) throws SQLException, TelegramApiException, URISyntaxException {
         event.generateEvent();
         if (!(newMessage.getText() == null)){ //cannot execute empty newMessage
-            errorLogs.add("DANGER");
             execute(newMessage);
         }
         execute(message);
