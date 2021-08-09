@@ -44,6 +44,13 @@ public class GenDelInlineKeyboardEvent extends Event{
         }
     }
 
+    @Override
+    public void updateDatabase() throws SQLException{
+        if (delConfirm){
+            resetSystemToEventStateOne(super.getChatId(), true);
+        }
+    }
+
     
     public void setInlineDeleteAction(String callData){
         String[] cdArray = callData.split("_");
