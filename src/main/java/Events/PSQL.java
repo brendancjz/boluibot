@@ -54,7 +54,7 @@ public class PSQL {
                 userId = resultSet.getInt("user_id");
             }
 
-            addNewFinancialsYear(userId, currentYear, currentMonth);
+            addNewFinancials(userId, currentYear, currentMonth);
         }
 
     }
