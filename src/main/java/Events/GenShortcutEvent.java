@@ -111,6 +111,7 @@ public class GenShortcutEvent extends Event {
         ArrayList<String> errorLogs = super.getErrorLogs();
 
         String entryType = psql.getUserEntryType(chatId);
+        errorLogs.add("GENSHORTCUT entrytype: " + entryType);
         Events.Event event = null;
         switch (entryType) {
             case "spend":
