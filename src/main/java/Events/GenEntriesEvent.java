@@ -38,7 +38,8 @@ public class GenEntriesEvent extends Event{
     public void generateEvent() throws SQLException {
         String entryType = "spend";
         HashMap<String,String> entryList = super.getPSQL().getMonthSortedEntries(super.getChatId(), entryType, targetStartDate, targetEndDate);
-        String entries = getFormattedEntries(entryList, SPENDING_STRING, sCategory);
+        String entries = targetEndDate.getMonth() +" Entries \n";
+        entries += getFormattedEntries(entryList, SPENDING_STRING, sCategory);
         super.getMessage().setText(entries);
     }
 
