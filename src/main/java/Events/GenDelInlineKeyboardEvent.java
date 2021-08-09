@@ -17,12 +17,14 @@ public class GenDelInlineKeyboardEvent extends Event{
     private LocalDate targetEndDate;
     private boolean delConfirm;
     private boolean delMonth;
+    private boolean delCancel;
 
     public GenDelInlineKeyboardEvent(SendMessage message, EditMessageText newMessage, ArrayList<String> errorlogs, int chatId, String callData) throws URISyntaxException, SQLException {
         super(message, errorlogs, chatId);
         this.editMessage = newMessage;
         this.delMonth = false;
         this.delConfirm = false;
+        this.delCancel = false;
         setInlineDeleteAction(callData);
     }
 
@@ -46,7 +48,11 @@ public class GenDelInlineKeyboardEvent extends Event{
        
         } else if (delConfirm){
             this.editMessage.setText(super.getPSQL().getDeleteEntryByTime(super.getChatId(), this.targetStartDate, this.targetEndDate));
-        } else {
+        } else if (delCancel) {
+            genMonthPlainEntries();
+            this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+        } 
+        else {
             genMonthPlainEntries();
             this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
         }
@@ -71,6 +77,10 @@ public class GenDelInlineKeyboardEvent extends Event{
         else if (cdArray[1].equals("confirm")){
             setDeleteMonth(YearMonth.of(Integer.parseInt(cdArray[2]), Integer.parseInt(cdArray[3]))); 
             this.delConfirm = true;
+        }
+        else if (cdArray[1].equals("cancel")){
+            setDeleteMonth(YearMonth.of(Integer.parseInt(cdArray[2]), Integer.parseInt(cdArray[3]))); 
+            this.delCancel = true;
         }
         // To view other month's entries
         else {
