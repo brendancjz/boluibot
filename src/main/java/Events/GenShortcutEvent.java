@@ -127,11 +127,6 @@ public class GenShortcutEvent extends Event {
             case "delete":
                 event = new Events.DeleteEvent(message, errorLogs, chatId);
                 break;
-            default:
-                message.setText("Inputting too fast!!");
-                event = new Events.CancelEvent(message, errorLogs, chatId);
-                break;
-
         }
         assert event != null;
         event.updateDatabase();
