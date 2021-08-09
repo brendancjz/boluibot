@@ -927,7 +927,7 @@ public class PSQL {
             preparedStatement.setInt(3, userId);
             preparedStatement.setInt(4, insertYearMonth.getYear());
             preparedStatement.setInt(5, insertYearMonth.getMonthValue());
-            preparedStatement.executeQuery();
+            preparedStatement.executeUpdate();
             insertYearMonth = insertYearMonth.plusMonths(1);
             errorLogs.add("YearMonth: " + insertYearMonth.toString());
         }
