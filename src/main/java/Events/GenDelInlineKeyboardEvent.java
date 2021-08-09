@@ -30,9 +30,9 @@ public class GenDelInlineKeyboardEvent extends Event{
 
     @Override
     public void generateEvent() throws SQLException, URISyntaxException { //Note that when this is called, currEventState = 2
+        int currEventState = super.getPSQL().getUserEventState(super.getChatId());
+        String entryType = super.getPSQL().getUserEntryType(super.getChatId());
         if (this.delMonth){
-            int currEventState = super.getPSQL().getUserEventState(super.getChatId());
-            String entryType = super.getPSQL().getUserEntryType(super.getChatId());
             if (currEventState == 2 && entryType.equals("delete")){ //checking if user trying to access the delete month button when they shouldnt access
                 int numOfEntriesMonth = super.getPSQL().getAllEntriesMonthCondensed(super.getChatId(), this.targetStartDate, this.targetEndDate).size();
                 if (numOfEntriesMonth > 0){
@@ -46,7 +46,12 @@ public class GenDelInlineKeyboardEvent extends Event{
             }
        
         } else if (delConfirm){
-            this.editMessage.setText(super.getPSQL().getDeleteEntryByTime(super.getChatId(), this.targetStartDate, this.targetEndDate));
+            if (currEventState == 3 && entryType.equals("delete")){ 
+                this.editMessage.setText(super.getPSQL().getDeleteEntryByTime(super.getChatId(), this.targetStartDate, this.targetEndDate));
+            }
+            else {
+                this.editMessage.setText("Error. Cannot delete. Type /delete to try again.");  
+            }
         } else if (delCancel) {
             genMonthPlainEntries();
             this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
