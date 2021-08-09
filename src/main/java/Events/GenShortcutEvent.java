@@ -113,6 +113,7 @@ public class GenShortcutEvent extends Event {
         String entryType = psql.getUserEntryType(chatId);
         errorLogs.add("GENSHORTCUT entrytype: " + entryType);
         Events.Event event = null;
+        //in case where entryType = null because commands are too fast!!!
         switch (entryType) {
             case "spend":
                 event = new Events.SpendEvent(message, errorLogs, chatId);
@@ -126,6 +127,11 @@ public class GenShortcutEvent extends Event {
             case "delete":
                 event = new Events.DeleteEvent(message, errorLogs, chatId);
                 break;
+            default:
+                message.setText("Inputting too fast!!");
+                event = new Events.CancelEvent(message, errorLogs, chatId);
+                break;
+
         }
         assert event != null;
         event.updateDatabase();
