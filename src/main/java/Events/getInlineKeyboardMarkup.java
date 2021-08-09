@@ -25,6 +25,10 @@ class GetInlineKeyboardMarkup {
         row.add(button1);
 
         keyboard.add(row);
+
+        button1.setText("cancel");
+        button1.setCallbackData("del_cancel_" + currYearMonth.getYear() + "_" + currYearMonth.getMonthValue()); //direct back
+        row.add(button1);
         
         InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
         inlineKeyboard.setKeyboard(keyboard);

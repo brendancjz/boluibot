@@ -29,13 +29,20 @@ public class GenDelInlineKeyboardEvent extends Event{
     @Override
     public void generateEvent() throws SQLException, URISyntaxException { //Note that when this is called, currEventState = 2
         if (this.delMonth){
-            int numOfEntriesMonth = super.getPSQL().getAllEntriesMonthCondensed(super.getChatId(), this.targetStartDate, this.targetEndDate).size();
-            if (numOfEntriesMonth > 0){
-                this.editMessage.setText("Entries of " + this.targetYM.getMonth() + " will be deleted. Press the button to confirm deletion");  
-                this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKBSecond(this.targetYM)); //why does this keep causing error!!!!    
-            } else {
-                this.editMessage.setText(Prompts.generateNoEntriesToDeletePrompt());  
-            }        
+            int currEventState = super.getPSQL().getUserEventState(super.getChatId());
+            String entryType = super.getPSQL().getUserEntryType(super.getChatId());
+            super.getErrorLogs().add("curr event state: " + currEventState);
+            if (currEventState == 2 && entryType.equals("delete")){
+                int numOfEntriesMonth = super.getPSQL().getAllEntriesMonthCondensed(super.getChatId(), this.targetStartDate, this.targetEndDate).size();
+                if (numOfEntriesMonth > 0){
+                    this.editMessage.setText("Entries of " + this.targetYM.getMonth() + " will be deleted. Press the button to confirm deletion");  
+                    this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKBSecond(this.targetYM)); 
+                } else {
+                    this.editMessage.setText(Prompts.generateNoEntriesToDeletePrompt());  
+                } 
+            }
+            this.editMessage.setText("Error. Cannot delete. Type /delete to try again.");  
+       
         } else if (delConfirm){
             this.editMessage.setText(super.getPSQL().getDeleteEntryByTime(super.getChatId(), this.targetStartDate, this.targetEndDate));
         } else {
