@@ -134,36 +134,6 @@ public class GenEntriesEvent extends Event{
         super.getMessage().setReplyMarkup(GetInlineKeyboardMarkup.entriesKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
     }
 
-    public void genPlainEntries() throws SQLException{
-        super.getErrorLogs().add("========= Entries Events.Event Called ========= ");
-
-        String entries = "<b>Complete Entry List</b> \n\n";
-
-        //SQL Query
-        ArrayList<ArrayList<String>> entryList = super.getPSQL().getAllEntries(super.getChatId());
-
-        //Example of how the entrylist will look Like:
-        // [ ["spend", "cost", "comment"] , ["earn", "cost", "comment"] ]
-
-        int count = 0;
-        for (ArrayList<String> entry : entryList) {
-            String typeOfEntry = entry.get(0);
-            String cost = entry.get(1);
-            String comment = entry.get(2);
-
-            super.getErrorLogs().add("[Entries] Select query successful.");
-
-            if (typeOfEntry.equals("spend")) {
-                entries += "   " + ++count + ".  - $" + cost + " : " + comment + "\n";
-            } else if (typeOfEntry.equals("earn")) {
-                entries += "   " + ++count + ".  + $" + cost + " : " + comment + "\n";
-            }
-        }
-
-        entries += "\n<em>No. of entries found: <b>" + entryList.size() + "</b></em>";
-        super.getMessage().setText(entries);
-    }
-
     public void genMonthPlainEntries() throws SQLException{
         super.getErrorLogs().add("========= Entries Events.Event Called ========= ");
 

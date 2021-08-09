@@ -110,7 +110,7 @@ public class EditEvent extends Event{
         switch (currEventState - 1) { //Very important
             case 1:
                 GenEntriesEvent genEntriesEvent = new GenEntriesEvent(super.getMessage(), super.getErrorLogs(), super.getChatId());
-                genEntriesEvent.genPlainEntries();
+                genEntriesEvent.genMonthPlainEntries();
                 break;
             case 2:
                 message.setText(String.join(" : ", psql.getSpecificEntry(chatId,Integer.parseInt(entryList[0]))));

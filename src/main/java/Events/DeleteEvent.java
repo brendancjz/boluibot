@@ -97,7 +97,7 @@ public class DeleteEvent extends Event{
         switch (currEventState - 1) { //Very important
             case 1:
                 GenEntriesEvent genEntriesEvent = new GenEntriesEvent(super.getMessage(), super.getErrorLogs(), super.getChatId());
-                genEntriesEvent.genPlainEntries();
+                genEntriesEvent.genMonthPlainEntries();
                 super.getMessage().setReplyMarkup(GetInlineKeyboardMarkup.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
                 break;
             case 2:
