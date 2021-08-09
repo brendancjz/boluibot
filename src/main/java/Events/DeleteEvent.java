@@ -61,8 +61,8 @@ public class DeleteEvent extends Event{
             case 1:
                 super.getErrorLogs().add(" === Events.Event State One Called === ");
 
-                int numOfEntries = super.getPSQL().getAllEntries(super.getChatId()).size();
-                if (numOfEntries > 0) {
+                int numEntries = psql.getUserEntryCount(chatId);
+                if (numEntries > 0) {
                     message.setText(Prompts.generateEventOneDeletePrompt());
                 } else {
                     message.setText(Prompts.generateNoEntriesToDeletePrompt());

@@ -268,6 +268,15 @@ public class PSQL {
 
     }
 
+    public int getUserEntryCount(int chatId) throws SQLException {
+        int entryCount = 0;
+        ResultSet resultSet = getUsersDataResultSet(chatId);
+        while (resultSet.next()) {
+            entryCount = resultSet.getInt("entry_count");
+        }
+        return entryCount;
+    }
+
     /**
      * This method resets the entry list in Users table
      * @param chatId int variable that stores the chatId. ChatId is unique
@@ -902,8 +911,10 @@ public class PSQL {
 
         if (!resultSet.isBeforeFirst()) {
             if (getAddNewFinancialsValid(userId, year, month)){
-                addNewFinancialsYear(userId, year, month);
+                errorLogs.add("NO ENTRY EXIST FOR NEXT YEAR!!");
+                addNewFinancials(userId, year, month);
             } else {
+                errorLogs.add("SOME ENTRY EXIST FOR NEXT YEAR!!");
                 addNewFinancials(userId, year, month);
             }
             return getMonthSpendEarnResultSet(userId, year, month);
@@ -951,7 +962,7 @@ public class PSQL {
     }
 
     /**
-     * 
+     * Checks if there are any financial entries in the next year
      * @param userId
      * @param year
      * @param month
@@ -960,24 +971,14 @@ public class PSQL {
      */
 
     private boolean getAddNewFinancialsValid(int userId, int year, int month) throws SQLException{
-        YearMonth currYearMonth = YearMonth.of(year, month);
-        YearMonth plusYearMonth = currYearMonth.plusMonths(12);
-
-        String sql = "SELECT * FROM financials WHERE user_id = ? and year >= ? and year <= ? and month >= ? and month <= ?"; 
+        String sql = "SELECT * FROM financials WHERE user_id = ? and ((year = ? and month >= ?) or (year = ? and month <= ?)"; 
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.setInt(1, userId);
-        statement.setInt(2, currYearMonth.getYear());
-        statement.setInt(3, currYearMonth.getMonthValue());
-        statement.setInt(2, plusYearMonth.getYear());
-        statement.setInt(3, plusYearMonth.getMonthValue());
-        ResultSet resultSet = statement.executeQuery();
-        
-        //If no result financial records found for the next year (including current month)
-        if (!resultSet.isBeforeFirst()) {
-            return true;
-        } else {
-            return false;
-        }
+        statement.setInt(2, year);
+        statement.setInt(3, month);
+        statement.setInt(4, year+1);
+        statement.setInt(5, month);
+        return statement.execute();
     }
 
 

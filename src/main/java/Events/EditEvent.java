@@ -47,7 +47,7 @@ public class EditEvent extends Event{
         switch (currEventState - 1) { //Very important
             case 1:
                 super.getErrorLogs().add(" === Events.Event State One Called === ");
-                int numEntries = psql.getAllEntries(chatId).size();
+                int numEntries = psql.getUserEntryCount(chatId);
                 if (numEntries > 0){
                     message.setText(Prompts.generateEventOneEditPrompt());
                 } else {
