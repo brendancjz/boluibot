@@ -33,8 +33,7 @@ public class GenDelInlineKeyboardEvent extends Event{
         if (this.delMonth){
             int currEventState = super.getPSQL().getUserEventState(super.getChatId());
             String entryType = super.getPSQL().getUserEntryType(super.getChatId());
-            super.getErrorLogs().add("curr event state: " + currEventState);
-            if (currEventState == 2 && entryType.equals("delete")){
+            if (currEventState == 2 && entryType.equals("delete")){ //checking if user trying to access the delete month button when they shouldnt access
                 int numOfEntriesMonth = super.getPSQL().getAllEntriesMonthCondensed(super.getChatId(), this.targetStartDate, this.targetEndDate).size();
                 if (numOfEntriesMonth > 0){
                     this.editMessage.setText("Entries of " + this.targetYM.getMonth() + " will be deleted. Press the button to confirm deletion");  
@@ -61,7 +60,7 @@ public class GenDelInlineKeyboardEvent extends Event{
     @Override
     public void updateDatabase() throws SQLException{
         if (delConfirm){
-            resetSystemToEventStateOne(super.getChatId(), true);
+            resetSystemToEventStateOne(super.getChatId(), true); //to ensure user is able to put other commands after completing deletion.
         }
     }
 
