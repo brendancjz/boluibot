@@ -171,7 +171,7 @@ class BoLuiBot extends TelegramLongPollingBot {
                     newMessage.enableHtml(true);
                 } else if (callData.startsWith("entry")){
                     event = new Events.GenEntriesInlineKeyboardEvent(message, newMessage, errorLogs,  Integer.parseInt(chatId), callData);
-                    newMessage.enableHtml(true);
+                    message.enableHtml(true);
                 }
 
                 try {
@@ -190,7 +190,8 @@ class BoLuiBot extends TelegramLongPollingBot {
 
     private void executeCallbackEvent(Event event, EditMessageText newMessage, SendMessage message) throws SQLException, TelegramApiException, URISyntaxException {
         event.generateEvent();
-        event.updateDatabase();
+        event.generateOtherEvents();
+        event.updateDatabase(); //NOTE THAT UPDATE DATABASE IS AFTER GENERATE EVENT (FOR THE DELETE EVENT)
         if (!(newMessage.getText() == null)){ //cannot execute empty newMessage
             execute(newMessage);
         }
