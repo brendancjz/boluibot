@@ -170,6 +170,8 @@ class BoLuiBot extends TelegramLongPollingBot {
                     event = new Events.GenDelInlineKeyboardEvent(message, newMessage, errorLogs, Integer.parseInt(chatId), callData);
                     event.resetSystemToEventStateOne(Integer.parseInt(chatId), true);
                     newMessage.enableHtml(true);
+                } else if (callData.startsWith("entry")){
+                    
                 }
 
                 try {
