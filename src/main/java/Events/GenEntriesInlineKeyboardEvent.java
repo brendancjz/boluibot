@@ -45,4 +45,9 @@ public class GenEntriesInlineKeyboardEvent extends Event{
         }
     }
 
+    public void setTargetYM(YearMonth yearMonth){
+        this.targetYM = yearMonth;
+
+    }
+
 }

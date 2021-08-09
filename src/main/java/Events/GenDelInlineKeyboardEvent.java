@@ -46,7 +46,7 @@ public class GenDelInlineKeyboardEvent extends Event{
             }
        
         } else if (delConfirm){
-            if (currEventState == 3 && entryType.equals("delete")){ 
+            if (currEventState == 2 && entryType.equals("delete")){ 
                 this.editMessage.setText(super.getPSQL().getDeleteEntryByTime(super.getChatId(), this.targetStartDate, this.targetEndDate));
             }
             else {

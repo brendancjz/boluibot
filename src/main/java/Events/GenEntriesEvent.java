@@ -131,6 +131,7 @@ public class GenEntriesEvent extends Event{
 
         entries += "\n<em>No. of entries found: <b>" + totalEntrycount + "</b></em>";
         super.getMessage().setText(entries);
+        super.getMessage().setReplyMarkup(GetInlineKeyboardMarkup.entriesKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
     }
 
     public void genPlainEntries() throws SQLException{
@@ -193,10 +194,6 @@ public class GenEntriesEvent extends Event{
         super.getMessage().setText(entries);
     }
 
-    public void setTargetYM(YearMonth yearMonth){
-        this.targetYM = yearMonth;
-        this.targetStartDate = LocalDate.of(yearMonth.getYear(), yearMonth.getMonthValue(), 1);
-        this.targetEndDate = LocalDate.of(yearMonth.getYear(), yearMonth.getMonthValue(), yearMonth.lengthOfMonth());
-    }
+
 
 }
