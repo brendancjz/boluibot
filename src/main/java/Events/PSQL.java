@@ -110,7 +110,6 @@ public class PSQL {
         tempArr[currEventState - 2] = text;
         updateEntryListItem(chatId,  Arrays.toString(tempArr));
 
-
     }
 
     /**
@@ -128,8 +127,8 @@ public class PSQL {
                 inRange = true;
             }
         }
-        return inRange;
 
+        return inRange;
     }
 
     /**
@@ -263,8 +262,6 @@ public class PSQL {
         }
 
         return userExists;
-
-
     }
 
     /**
@@ -1041,7 +1038,6 @@ public class PSQL {
     /**
      * This method gets the deleted entry from the Entries table
      * @param chatId int variable that stores the chatId. ChatId is unique
-     * @param userEntryNum int variable that stores the user entry number
      * @return Returns the String statement of the deleted entry.
      * @throws SQLException Throws an exception when query is unsuccessful
      */
@@ -1058,10 +1054,9 @@ public class PSQL {
             userId = resultSet.getInt("user_id");
         }
 
-        for (int i = 0; i < delEntryNumArr.length; i++){
-            int userEntryNum = delEntryNumArr[i];
+        for (int userEntryNum : delEntryNumArr) {
             resultSet = getSpecificEntryResultSet(userId, userEntryNum);
-            errorLogs.add("DELETE: run getSPECIFICENTRY"); 
+            errorLogs.add("DELETE: run getSPECIFICENTRY");
 
             while (resultSet.next()) {
                 entriesId = resultSet.getInt("entries_id");
@@ -1205,9 +1200,6 @@ public class PSQL {
 
         //Determine what has been changed (could be a combination)
         if (!editEntryArr.get(0).equals(oldEntry[0])) {  //EntryType has changed
-            errorLogs.add("EDIT: ENTRYTYPE");
-            errorLogs.add("Old Entry [0] " + oldEntry[0]);
-            errorLogs.add("New Entry [0] " + editEntryArr.get(0));
 
             //updating Entries table
             updateEntriesEntryType(selectedUserId, userEntryNum, editEntryArr.get(0));
@@ -1307,7 +1299,6 @@ public class PSQL {
         resultSet.close();
 
     }
-
 
 
     //Miscellaneous Code

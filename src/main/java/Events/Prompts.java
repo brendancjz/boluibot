@@ -126,7 +126,7 @@ public class Prompts {
                 "To <em>view</em> entries, type /entries. \n" +
                 "To <em>edit</em> entries, type /edit. \n" +
                 "To <em>delete</em> entries, type /delete. \n" +
-                "To <em>view</em> financials, type /finance. <b>[BETA]</b> \n\n" +
+                "To <em>view</em> financials, type /finance.\n\n" +
                 "Made a mistake while inputting an entry? Type /cancel to reset it. \n\n" +
                 "<b><u>Inputs Types</u></b> \n - Category e.g Food, Clothes <b>[Single word]</b>\n - Cost/Earning e.g $12.34, $1234 <b>[Numeric]</b>\n - Comment e.g Bought pizza for lunch <b>[Phrase]</b>\n\n"+
                 "Got the hang of inputting entries? Use these shortcuts, /s or /e, for an <em>effortless</em> entry. \n\n" +

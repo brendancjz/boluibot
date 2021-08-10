@@ -175,7 +175,6 @@ class BoLuiBot extends TelegramLongPollingBot {
                 try {
                      assert event != null;
                     executeCallbackEvent(event, newMessage, message);
-                    //execute(newMessage);
                 } catch (TelegramApiException e) {
                      e.printStackTrace();
                 }
