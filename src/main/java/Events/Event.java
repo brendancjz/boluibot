@@ -91,6 +91,8 @@ public class Event {
         psql.updateUserEntryType(chatId, INITIAL_ENTRY_COMMAND);
         psql.resetEntryList(chatId);
         removeReplyKeyboardFromMessage(message);
+
+        psql.closeConnection();
     }
 
     private void removeReplyKeyboardFromMessage(SendMessage message) {

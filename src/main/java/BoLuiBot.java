@@ -9,11 +9,9 @@ import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
 class BoLuiBot extends TelegramLongPollingBot {
-    private final PSQL psql;
     private final ArrayList<String> errorLogs;
 
     BoLuiBot() throws URISyntaxException, SQLException {
-        this.psql = new PSQL();
         this.errorLogs = new ArrayList<>();
     }
 
@@ -49,19 +47,20 @@ class BoLuiBot extends TelegramLongPollingBot {
                 String text = update.getMessage().getText();
 
                 Event event = null;
+                PSQL psql = new PSQL();
 
                 //Universal Commands. No need to update Query and check User.
                 if ("/start".equals(text)) {
                     event = new StartEvent(message, errorLogs, chatId, name);
-                    executeEvent(event, message);
+                    executeEvent(event, message, psql);
                     return; //Code ends here
                 }
 
                 //When received a text, check the sender of this text and update text into database.
-                boolean isCheckGood = checkingQueryAndUser(chatId, text);
-                if (!checkingQueryAndUser(chatId, text)) {
+                boolean isCheckGood = checkingQueryAndUser(chatId, text, psql);
+                if (!isCheckGood) {
                     event = new NotRegisteredEvent(message, errorLogs, chatId);
-                    executeEvent(event, message);
+                    executeEvent(event, message, psql);
                     return; //Code ends here
                 }
                 errorLogs.add("Received text and Checking user... isCheckGood " + isCheckGood);
@@ -142,7 +141,7 @@ class BoLuiBot extends TelegramLongPollingBot {
                 }
 
                 assert event != null;
-                executeEvent(event, message);
+                executeEvent(event, message, psql);
             }
             else if (update.hasCallbackQuery()) {
                 String callData = update.getCallbackQuery().getData();
@@ -158,6 +157,7 @@ class BoLuiBot extends TelegramLongPollingBot {
                 message.setChatId(chatId);
 
                 Event event = null;
+                PSQL psql = new PSQL();
 
                 errorLogs.add(callData + " this is calldata");
 
@@ -176,7 +176,7 @@ class BoLuiBot extends TelegramLongPollingBot {
 
                 try {
                      assert event != null;
-                    executeCallbackEvent(event, newMessage, message);
+                    executeCallbackEvent(event, newMessage, message, psql);
                 } catch (TelegramApiException e) {
                      e.printStackTrace();
                 }
@@ -187,7 +187,7 @@ class BoLuiBot extends TelegramLongPollingBot {
         }
     }
 
-    private void executeCallbackEvent(Event event, EditMessageText newMessage, SendMessage message) throws SQLException, TelegramApiException, URISyntaxException {
+    private void executeCallbackEvent(Event event, EditMessageText newMessage, SendMessage message, PSQL psql) throws SQLException, TelegramApiException, URISyntaxException {
         event.generateEvent();
         String msg = message.toString();
         event.updateDatabase(); //NOTE THAT UPDATE DATABASE IS AFTER GENERATE EVENT (FOR THE DELETE EVENT)
@@ -201,9 +201,11 @@ class BoLuiBot extends TelegramLongPollingBot {
             errorLogs.add("Message has changed");
             execute(message);
         }
+
+        psql.closeConnection();
     }
 
-    private void executeEvent(Event event, SendMessage message) throws SQLException, TelegramApiException, URISyntaxException {
+    private void executeEvent(Event event, SendMessage message, PSQL psql) throws SQLException, TelegramApiException, URISyntaxException {
         event.updateDatabase();
         event.generateEvent();
         String msg = message.toString();
@@ -214,6 +216,8 @@ class BoLuiBot extends TelegramLongPollingBot {
             errorLogs.add("Message has changed");
             execute(message);
         }
+
+        psql.closeConnection();
     }
 
     /**
@@ -223,8 +227,9 @@ class BoLuiBot extends TelegramLongPollingBot {
      * @return Returns a boolean to show that the user is registered or not.
      * @throws SQLException Throws an exception when query is unsuccessful
      */
-    private boolean checkingQueryAndUser(int chatId, String text) throws SQLException {
+    private boolean checkingQueryAndUser(int chatId, String text, PSQL psql) throws SQLException {
         boolean everythingGood = false;
+
 
         //SQL Queries
         //2. Check if chatId is in database

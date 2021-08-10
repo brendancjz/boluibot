@@ -1366,6 +1366,16 @@ public class PSQL {
         return DriverManager.getConnection(dbUrl, username, password);
     }
 
+    public void closeConnection() {
+        try {
+            connection.close();
+            System.out.println("Is Connection closed?   " + connection.isClosed());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 
 
 }
