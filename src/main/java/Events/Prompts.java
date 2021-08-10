@@ -192,4 +192,9 @@ public class Prompts {
     public static String generateNoEntriesToDeletePrompt() {
         return "You do not have any entries to delete. Let's add one! Enter /spend or /earn to start inputting.";
     }
+
+    public static String generateNoEntriesToEditPrompt() {
+        return "You do not have any entries to edit. Let's add one! Enter /spend or /earn to start inputting.";
+    }
 }
+

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.time.LocalDate;
+import java.time.Year;
 import java.time.YearMonth;
 import java.util.HashMap;
 
@@ -53,7 +54,7 @@ public class PSQL {
                 userId = resultSet.getInt("user_id");
             }
 
-            addNewFinancials(userId, currentYear, currentMonth);
+            addNewFinancialsYear(userId, currentYear, currentMonth);
         }
 
     }
@@ -262,6 +263,15 @@ public class PSQL {
         }
 
         return userExists;
+    }
+
+    public int getUserEntryCount(int chatId) throws SQLException {
+        int entryCount = 0;
+        ResultSet resultSet = getUsersDataResultSet(chatId);
+        while (resultSet.next()) {
+            entryCount = resultSet.getInt("entry_count");
+        }
+        return entryCount;
     }
 
     /**
@@ -504,7 +514,7 @@ public class PSQL {
 
 
     //sorts by category and returns in hashmap
-    public HashMap<String,String> getSortedEntries (int chatId, String entryType, LocalDate startDate, LocalDate endDate) throws SQLException {
+    public HashMap<String,String> getMonthSortedEntries (int chatId, String entryType, LocalDate startDate, LocalDate endDate) throws SQLException {
         String[] sCategory = {"Entertainment","Food","Gift","Shopping","Transport", "Utilities"}; //can be an event class attribute
         String[] eCategory = {"Income", "Allowance", "Investment"};
         ArrayList<String> allCategory = entryType.equals("spend") ? new ArrayList<>(Arrays.asList(sCategory)) : new ArrayList<>(Arrays.asList(eCategory));
@@ -608,25 +618,7 @@ public class PSQL {
         }
 
         return entryList;
-    }
-
-    public ArrayList<HashMap<String,String>> getAllEntriesMonth(int chatId, LocalDate startDate, LocalDate endDate) throws SQLException {
-
-        ArrayList<HashMap<String,String>> entryList = new ArrayList<>();
-        String spend = "spend";
-        String earn = "earn";
-        entryList.add(getSortedEntries(chatId, spend, startDate, endDate));
-        entryList.add(getSortedEntries(chatId, earn, startDate, endDate));
-
-        if (entryList.size() > 0) {
-            errorLogs.add("[Entries] Select query successful.");
-        } else {
-            errorLogs.add("[Entries] Select query unsuccessful.");
-        }
-
-        return entryList;
-    }
-    
+    }    
 
     private ResultSet getEntrybyTypeResultSet(int chatId, String entryType, LocalDate startDate, LocalDate endDate) throws SQLException {
         errorLogs.add("Doing query...");
@@ -840,6 +832,7 @@ public class PSQL {
     // yearMonth favoured over LocalDate because yearMonth can be crafted with integer year and date values 
     // -- ease of viewing other months data.
     public String getMonthFinancials(int chatId, YearMonth yearMonth) throws SQLException {
+
         String fEntry = "<b>" + yearMonth.getMonth()+ " Money Flow</b>\n\n";
         ResultSet resultSet = getUsersDataResultSet(chatId);
 
@@ -850,7 +843,7 @@ public class PSQL {
 
         double totalSpending = 0, totalEarning = 0;
         resultSet = getMonthSpendEarnResultSet(userId, yearMonth.getYear(), yearMonth.getMonthValue());
-        
+
         while (resultSet.next()){
             totalSpending = resultSet.getDouble("total_spending");
             totalEarning = resultSet.getDouble("total_earning");
@@ -897,6 +890,7 @@ public class PSQL {
         ResultSet resultSet = statement.executeQuery();
 
         if (!resultSet.isBeforeFirst()) {
+            errorLogs.add("SOME ENTRY EXIST FOR NEXT YEAR!!");
             addNewFinancials(userId, year, month);
             return getMonthSpendEarnResultSet(userId, year, month);
         } else {
@@ -910,8 +904,27 @@ public class PSQL {
      * @return Returns the ResultSet object to be used to obtain data
      * @throws SQLException Throws an exception when query is unsuccessful
      */
-    private void addNewFinancials(int userId, int year, int month) throws SQLException {
+    private void addNewFinancialsYear(int userId, int year, int month) throws SQLException {
+        YearMonth insertYearMonth = YearMonth.of(year, month);
+        String sql;
+        PreparedStatement preparedStatement;
+        //inserting a year worth of data
+        for (int i = 0; i < 12; i++){
+            sql = "INSERT INTO financials (total_spending, total_earning, user_id, year, month) VALUES (? ,?, ?, ?, ?)";
+            preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setDouble(1, INITIAL_FINANCIAL_VALUE);
+            preparedStatement.setDouble(2, INITIAL_FINANCIAL_VALUE);
+            preparedStatement.setInt(3, userId);
+            preparedStatement.setInt(4, insertYearMonth.getYear());
+            preparedStatement.setInt(5, insertYearMonth.getMonthValue());
+            preparedStatement.executeUpdate();
+            insertYearMonth = insertYearMonth.plusMonths(1);
+            errorLogs.add("YearMonth: " + insertYearMonth.toString());
+        }
 
+    }
+
+    private void addNewFinancials(int userId, int year, int month) throws SQLException {
         String sql = "INSERT INTO financials (total_spending, total_earning, user_id, year, month) VALUES (? ,?, ?, ?, ?)";
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setDouble(1, INITIAL_FINANCIAL_VALUE);
@@ -919,8 +932,28 @@ public class PSQL {
         preparedStatement.setInt(3, userId);
         preparedStatement.setInt(4, year);
         preparedStatement.setInt(5, month);
-        preparedStatement.executeQuery();
+        preparedStatement.executeUpdate();
 
+    }
+
+    /**
+     * Checks if there are any financial entries in the next year
+     * @param userId
+     * @param year
+     * @param month
+     * @return
+     * @throws SQLException
+     */
+
+    private boolean getAddNewFinancialsValid(int userId, int year, int month) throws SQLException{
+        String sql = "SELECT * FROM financials WHERE user_id = ? and ((year = ? and month >= ?) or (year = ? and month <= ?))"; 
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setInt(1, userId);
+        statement.setInt(2, year);
+        statement.setInt(3, month);
+        statement.setInt(4, year+1);
+        statement.setInt(5, month);
+        return statement.execute();
     }
 
 

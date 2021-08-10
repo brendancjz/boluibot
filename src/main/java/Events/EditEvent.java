@@ -47,18 +47,22 @@ public class EditEvent extends Event{
         switch (currEventState - 1) { //Very important
             case 1:
                 super.getErrorLogs().add(" === Events.Event State One Called === ");
-                message.setText(Prompts.generateEventOneEditPrompt());
+                int numEntries = psql.getUserEntryCount(chatId);
+                if (numEntries > 0){
+                    message.setText(Prompts.generateEventOneEditPrompt());
+                } else {
+                    message.setText(Prompts.generateNoEntriesToEditPrompt());
+                    resetSystemToEventStateOne(chatId, true);
+                }
                 break;
             case 2:
                 super.getErrorLogs().add("========= Events.Event State Two Called ========= ");
-                if (isNumericAndPositive(entryList[0]) && psql.checkEntryCountRange(chatId, Integer.parseInt(entryList[0]))) {
-                    message.setText(Prompts.generateEventTwoEditPrompt());
-                } else {
-                    psql.updateUserEventState(chatId, 1); //Decrement Events.Event State
-
-                    message.setText(Prompts.generateInputtingEntryNumErrorPrompt(entryList[0]));
-                }
-
+                    if (isNumericAndPositive(entryList[0]) && psql.checkEntryCountRange(chatId, Integer.parseInt(entryList[0]))) {
+                        message.setText(Prompts.generateEventTwoEditPrompt());
+                    } else {
+                        psql.updateUserEventState(chatId, 1); //Decrement Events.Event State
+                        message.setText(Prompts.generateInputtingEntryNumErrorPrompt(entryList[0]));
+                    }
                 break;
             case 3:
                 super.getErrorLogs().add("========= Events.Event State Three Called ========= ");
@@ -106,7 +110,7 @@ public class EditEvent extends Event{
         switch (currEventState - 1) { //Very important
             case 1:
                 GenEntriesEvent genEntriesEvent = new GenEntriesEvent(super.getMessage(), super.getErrorLogs(), super.getChatId());
-                genEntriesEvent.genPlainEntries();
+                genEntriesEvent.genMonthPlainEntries();
                 break;
             case 2:
                 message.setText(String.join(" : ", psql.getSpecificEntry(chatId,Integer.parseInt(entryList[0]))));

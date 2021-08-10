@@ -1,37 +1,33 @@
 package Events;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 
 import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import java.time.LocalDate;
-import java.time.Year;
 import java.time.YearMonth;
+import java.util.Arrays;
+import java.util.Map;
 
-public class GenEntriesEvent extends Event{
+public class GenEntriesInlineKeyboardEvent extends Event{
     private final String[] sCategory = {"Entertainment","Food","Gift","Shopping","Transport", "Utilities"}; //can be an event class attribute because it can be used for other events!!
     private final String[] eCategory = {"Allowance", "Income", "Investment"};
     private final String NO_ENTRY_STRING = "<code>---- no entry ---- </code>\n\n";
     private final String OTHERS_STRING = "<em>Others</em>\n";
     private final String SPENDING_STRING = "\n<b>-------- SPENDINGS --------</b>\n\n";
     private final String EARNING_STRING = "\n<b>-------- EARNINGS --------</b>\n\n";
-    private final LocalDate dateToday;
+    private final EditMessageText editMessage;
     private YearMonth targetYM;
     private LocalDate targetStartDate;
     private LocalDate targetEndDate;
 
-
-
-    public GenEntriesEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
-        dateToday = LocalDate.now();
-        this.targetYM = YearMonth.of(dateToday.getYear(),dateToday.getMonthValue());
-        this.targetStartDate = dateToday.withDayOfMonth(1);
-        this.targetEndDate = dateToday.withDayOfMonth(this.dateToday.lengthOfMonth());
+    public GenEntriesInlineKeyboardEvent(SendMessage message, EditMessageText newMessage, ArrayList<String> errorlogs, int chatId, String callData) throws URISyntaxException, SQLException {
+        super(message,errorlogs, chatId);
+        this.editMessage = newMessage;
+        setInlineEntriesAction(callData);
     }
 
     @Override
@@ -53,34 +49,15 @@ public class GenEntriesEvent extends Event{
         super.getMessage().setReplyMarkup(GetInlineKeyboardMarkup.entriesKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
     }
 
-    public void genMonthPlainEntries() throws SQLException{
-        super.getErrorLogs().add("========= Entries Events.Event Called ========= ");
+    public void setEditMonth(YearMonth yearMonth){
+        this.targetYM = yearMonth;
+        this.targetStartDate = LocalDate.of(yearMonth.getYear(), yearMonth.getMonthValue(), 1);
+        this.targetEndDate = LocalDate.of(yearMonth.getYear(), yearMonth.getMonthValue(), yearMonth.lengthOfMonth());
+    }
 
-        String entries = "<b>" + this.targetYM.getMonth() + " Entry List</b> \n\n";
-
-        //SQL Query
-        ArrayList<ArrayList<String>> entryList = super.getPSQL().getAllEntriesMonthCondensed(super.getChatId(), this.targetStartDate, this.targetEndDate);
-
-        //Example of how the entrylist will look Like:
-        // [ ["spend", "cost", "comment","entryNum"] , ["earn", "cost", "comment","entryNum"] ]
-        for (ArrayList<String> entry : entryList) {
-            String typeOfEntry = entry.get(0);
-            String cost = entry.get(1);
-            String comment = entry.get(2);
-            String entryNum = entry.get(3);
-
-            super.getErrorLogs().add("[Entries] Select query successful.");
-
-            if (typeOfEntry.equals("spend")) {
-                entries += "   " + entryNum + ".  - $" + cost + " : " + comment + "\n";
-            } else if (typeOfEntry.equals("earn")) {
-                entries += "   " + entryNum + ".  + $" + cost + " : " + comment + "\n";
-            }
-            
-        }
-
-        entries += "\n<em>No. of entries found: <b>" + entryList.size() + "</b></em>";
-        super.getMessage().setText(entries);
+    public void setInlineEntriesAction(String callData){
+        String[] cdArray = callData.split("_");
+        setEditMonth(YearMonth.of(Integer.parseInt(cdArray[1]) , Integer.parseInt(cdArray[2])));
     }
 
     private String getFormattedEntries(HashMap<String,String> hashEntry, String entryTypeString, String [] categoriesArray){
@@ -125,7 +102,5 @@ public class GenEntriesEvent extends Event{
 
         return entries;
     }
-
-
 
 }

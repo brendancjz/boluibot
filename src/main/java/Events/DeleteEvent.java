@@ -61,8 +61,8 @@ public class DeleteEvent extends Event{
             case 1:
                 super.getErrorLogs().add(" === Events.Event State One Called === ");
 
-                int numOfEntries = super.getPSQL().getAllEntries(super.getChatId()).size();
-                if (numOfEntries > 0) {
+                int numEntries = psql.getUserEntryCount(chatId);
+                if (numEntries > 0) {
                     message.setText(Prompts.generateEventOneDeletePrompt());
                 } else {
                     message.setText(Prompts.generateNoEntriesToDeletePrompt());
@@ -97,7 +97,7 @@ public class DeleteEvent extends Event{
         switch (currEventState - 1) { //Very important
             case 1:
                 GenEntriesEvent genEntriesEvent = new GenEntriesEvent(super.getMessage(), super.getErrorLogs(), super.getChatId());
-                genEntriesEvent.genPlainEntries();
+                genEntriesEvent.genMonthPlainEntries();
                 super.getMessage().setReplyMarkup(GetInlineKeyboardMarkup.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
                 break;
             case 2:

@@ -111,7 +111,9 @@ public class GenShortcutEvent extends Event {
         ArrayList<String> errorLogs = super.getErrorLogs();
 
         String entryType = psql.getUserEntryType(chatId);
+        errorLogs.add("GENSHORTCUT entrytype: " + entryType);
         Events.Event event = null;
+        //in case where entryType = null because commands are too fast!!!
         switch (entryType) {
             case "spend":
                 event = new Events.SpendEvent(message, errorLogs, chatId);

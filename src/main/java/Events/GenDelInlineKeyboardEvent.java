@@ -17,30 +17,54 @@ public class GenDelInlineKeyboardEvent extends Event{
     private LocalDate targetEndDate;
     private boolean delConfirm;
     private boolean delMonth;
+    private boolean delCancel;
 
     public GenDelInlineKeyboardEvent(SendMessage message, EditMessageText newMessage, ArrayList<String> errorlogs, int chatId, String callData) throws URISyntaxException, SQLException {
         super(message, errorlogs, chatId);
         this.editMessage = newMessage;
         this.delMonth = false;
         this.delConfirm = false;
+        this.delCancel = false;
         setInlineDeleteAction(callData);
     }
 
     @Override
     public void generateEvent() throws SQLException, URISyntaxException { //Note that when this is called, currEventState = 2
+        int currEventState = super.getPSQL().getUserEventState(super.getChatId());
+        String entryType = super.getPSQL().getUserEntryType(super.getChatId());
         if (this.delMonth){
-            int numOfEntriesMonth = super.getPSQL().getAllEntriesMonthCondensed(super.getChatId(), this.targetStartDate, this.targetEndDate).size();
-            if (numOfEntriesMonth > 0){
-                this.editMessage.setText("Entries of " + this.targetYM.getMonth() + " will be deleted. Press the button to confirm deletion");  
-                this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKBSecond(this.targetYM)); //why does this keep causing error!!!!    
+            if (currEventState == 2 && entryType.equals("delete")){ //checking if user trying to access the delete month button when they shouldnt access
+                int numOfEntriesMonth = super.getPSQL().getAllEntriesMonthCondensed(super.getChatId(), this.targetStartDate, this.targetEndDate).size();
+                if (numOfEntriesMonth > 0){
+                    this.editMessage.setText("Entries of " + this.targetYM.getMonth() + " will be deleted. Press the button to confirm deletion");  
+                    this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKBSecond(this.targetYM)); 
+                } else {
+                    this.editMessage.setText(Prompts.generateNoEntriesToDeletePrompt());  
+                } 
             } else {
-                this.editMessage.setText(Prompts.generateNoEntriesToDeletePrompt());  
-            }        
+                this.editMessage.setText("Error. Cannot delete. Type /delete to try again.");  
+            }
         } else if (delConfirm){
-            this.editMessage.setText(super.getPSQL().getDeleteEntryByTime(super.getChatId(), this.targetStartDate, this.targetEndDate));
-        } else {
+            if (currEventState == 2 && entryType.equals("delete")){ 
+                this.editMessage.setText(super.getPSQL().getDeleteEntryByTime(super.getChatId(), this.targetStartDate, this.targetEndDate));
+            }
+            else {
+                this.editMessage.setText("Error. Cannot delete. Type /delete to try again.");  
+            }
+        } else if (delCancel) {
             genMonthPlainEntries();
             this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+        } 
+        else {
+            genMonthPlainEntries();
+            this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+        }
+    }
+
+    @Override
+    public void updateDatabase() throws SQLException{
+        if (delConfirm){
+            resetSystemToEventStateOne(super.getChatId(), true); //to ensure user is able to put other commands after completing deletion.
         }
     }
 
@@ -56,6 +80,10 @@ public class GenDelInlineKeyboardEvent extends Event{
         else if (cdArray[1].equals("confirm")){
             setDeleteMonth(YearMonth.of(Integer.parseInt(cdArray[2]), Integer.parseInt(cdArray[3]))); 
             this.delConfirm = true;
+        }
+        else if (cdArray[1].equals("cancel")){
+            setDeleteMonth(YearMonth.of(Integer.parseInt(cdArray[2]), Integer.parseInt(cdArray[3]))); 
+            this.delCancel = true;
         }
         // To view other month's entries
         else {

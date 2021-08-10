@@ -25,11 +25,47 @@ class GetInlineKeyboardMarkup {
         row.add(button1);
 
         keyboard.add(row);
+
+        row = new ArrayList<>();
+
+        InlineKeyboardButton button2 = new InlineKeyboardButton();
+        button2.setText("back");
+        button2.setCallbackData("del_cancel_" + currYearMonth.getYear() + "_" + currYearMonth.getMonthValue()); //direct back
+        row.add(button2);
+
+        keyboard.add(row);
         
         InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
         inlineKeyboard.setKeyboard(keyboard);
         return inlineKeyboard;
     }
+
+
+    //KeyboardMarkUps
+    public static InlineKeyboardMarkup entriesKB(YearMonth prevMonth, YearMonth currMonth, YearMonth nextMonth) {
+        List<InlineKeyboardButton> row = new ArrayList<>();
+
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("<");
+        button1.setCallbackData("entry_" + prevMonth.getYear() + "_" + prevMonth.getMonthValue()); //e.g. fin_2021_7
+        row.add(button1);
+
+        InlineKeyboardButton button2 = new InlineKeyboardButton();
+        button2.setText(">");
+        button2.setCallbackData("entry_" + nextMonth.getYear() + "_" + nextMonth.getMonthValue());
+        row.add(button2);
+
+        keyboard.add(row);
+        row = new ArrayList<>();
+
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
+        inlineKeyboard.setKeyboard(keyboard);
+        return inlineKeyboard;
+    }
+
+
     //KeyboardMarkUps
     public static InlineKeyboardMarkup numpadKB() {
 
