@@ -12,9 +12,9 @@ public class GenNumPadInlineKeyboardEvent extends Event{
     private final String callData;
     private final String prevAnswer;
 
-    public GenNumPadInlineKeyboardEvent(SendMessage message, ArrayList<String> errorlogs, int chatId,
+    public GenNumPadInlineKeyboardEvent(SendMessage message, PSQL psql, int chatId,
                                         String callData, String prevAnswer, EditMessageText newMessage) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+        super(message, psql, chatId);
         this.newMessage = newMessage;
         this.callData = callData;
         this.prevAnswer = prevAnswer;
@@ -26,17 +26,16 @@ public class GenNumPadInlineKeyboardEvent extends Event{
         boolean already2DP = prevAnswer.contains(".") && (prevAnswer.length() - 1 - prevAnswer.indexOf(".")) == 2;
 
         String answer = prevAnswer;
-        super.getErrorLogs().add("ADDING " + callData.substring(7));
+        System.out.println("ADDING " + callData.substring(7));
         int chatId = super.getChatId();
         PSQL psql = super.getPSQL();
         SendMessage message = super.getMessage();
-        ArrayList<String> errorLogs = super.getErrorLogs();
 
         //Verifying
         if (prevAnswer.contains("?") || prevAnswer.equals("Input: $")) answer = "Input: $"; //Remove the prompt and replace with $ sign
 
         if (callData.equals("numpad_done")) {
-            super.getErrorLogs().add(prevAnswer.substring(1) + " FINAL VALUE");
+            System.out.println(prevAnswer.substring(1) + " FINAL VALUE");
 
             //Events.Event state 3 now
             //Update Database
@@ -47,16 +46,16 @@ public class GenNumPadInlineKeyboardEvent extends Event{
             Event event = null;
             switch (entryType) {
                 case "spend":
-                    event = new SpendEvent(message, errorLogs, chatId);
+                    event = new SpendEvent(message, psql, chatId);
                     break;
                 case "earn":
-                    event = new EarnEvent(message, errorLogs, chatId);
+                    event = new EarnEvent(message, psql, chatId);
                     break;
                 case "edit":
-                    event = new EditEvent(message, errorLogs, chatId);
+                    event = new EditEvent(message, psql, chatId);
                     break;
                 case "delete":
-                    event = new DeleteEvent(message, errorLogs, chatId);
+                    event = new DeleteEvent(message, psql, chatId);
                     break;
             }
             assert event != null;
@@ -82,7 +81,7 @@ public class GenNumPadInlineKeyboardEvent extends Event{
 
         }
 
-        newMessage.setReplyMarkup(Events.GetInlineKeyboardMarkup.numpadKB());
+        newMessage.setReplyMarkup(KeyboardMarkups.numpadKB());
         newMessage.setText(answer);
     }
 }

@@ -12,8 +12,8 @@ import java.util.List;
 
 public class SpendEvent extends Event{
 
-    public SpendEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public SpendEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
     }
 
     @Override
@@ -58,18 +58,18 @@ public class SpendEvent extends Event{
 
         switch (currEventState - 1) { //Very important
             case 1: //Getting Category. It has gotten Command
-                super.getErrorLogs().add(" === Events.Event State One Called === ");
+                System.out.println(" === Events.Event State One Called === ");
                 prompt = Prompts.generateEventOneSpendPrompt();
                 message.setText(prompt);
-                message.setReplyMarkup(getSpendReplyKeyboardMarkup());
+                message.setReplyMarkup(KeyboardMarkups.getSpendReplyKeyboardMarkup());
                 break;
             case 2: //Getting Cost. It has gotten Command and Category
-                super.getErrorLogs().add(" === Events.Event State Two Called === ");
+                System.out.println(" === Events.Event State Two Called === ");
 
                 if (validateCategoryInput(entryList[0])) {
                     prompt = Prompts.generateEventTwoSpendPrompt(entryList[0]); //Category
                     message.setText(prompt);
-                    message.setReplyMarkup(Events.GetInlineKeyboardMarkup.numpadKB());
+                    message.setReplyMarkup(KeyboardMarkups.numpadKB());
                 } else {
                     psql.updateUserEventState(chatId, 1); //Decrement Events.Event State.
 
@@ -78,7 +78,7 @@ public class SpendEvent extends Event{
 
                 break;
             case 3: //Getting Comment or Cost again. It has gotten Command and Category and Cost
-                super.getErrorLogs().add(" === Events.Event State Three Called === ");
+                System.out.println(" === Events.Event State Three Called === ");
                 String cost = removingDollarSign(psql.getUsersEntryList(chatId)[1]);
                 if (isNumericAndPositive(cost) && validateCostInput(cost)) {
                     prompt = Prompts.generateEventThreeSpendPrompt(cost);
@@ -86,45 +86,16 @@ public class SpendEvent extends Event{
                 } else {
                     psql.updateUserEventState(chatId, 2); //Decrement Events.Event State.
 
-                    super.getErrorLogs().add("Cost inputting is not numeric or negative value!");
+                    System.out.println("Cost inputting is not numeric or negative value!");
                     message.setText(Prompts.generateInputtingCostErrorPrompt());
                 }
                 break;
             case 4: //Output entry and reset
-                super.getErrorLogs().add(" === Events.Event State Four Called === ");
+                System.out.println(" === Events.Event State Four Called === ");
                 message.setText("Thanks! You have added a new entry: \nSpent $" + entryList[1] +
                         " on " + entryList[0] + " - \"" + entryList[2] + "\"");
                 resetSystemToEventStateOne(chatId, true); //Reset System
                 break;
         }
-    }
-
-    private ReplyKeyboardMarkup getSpendReplyKeyboardMarkup() {
-        String[] sCategory = {"Entertainment","Food","Gift","Shopping","Transport", "Utilities"};
-
-
-        KeyboardRow row = new KeyboardRow();
-
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        int count = 1;
-        for (String category : sCategory) {
-            if (count > 1 && count % 2 == 1) {
-                row = new KeyboardRow();
-            }
-
-            KeyboardButton button = new KeyboardButton();
-            button.setText(category);
-            row.add(button);
-            if (count % 2 == 0) {
-                keyboard.add(row);
-            }
-            count++;
-        }
-
-        ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
-        markup.setKeyboard(keyboard);
-        markup.setResizeKeyboard(true);
-        markup.setOneTimeKeyboard(true);
-        return markup;
     }
 }

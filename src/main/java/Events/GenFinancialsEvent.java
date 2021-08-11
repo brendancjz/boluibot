@@ -11,8 +11,8 @@ import java.util.ArrayList;
 public class GenFinancialsEvent extends Event{
     private YearMonth targetYM;
 
-    public GenFinancialsEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public GenFinancialsEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
         LocalDate dateToday = LocalDate.now();
         this.targetYM = YearMonth.of(dateToday.getYear(), dateToday.getMonthValue());
     }
@@ -22,7 +22,7 @@ public class GenFinancialsEvent extends Event{
         String monthFinancials = super.getPSQL().getMonthFinancials(super.getChatId(), getYearMonth());
         //The goal is to move information from DB to the unique keyboard that is generated. Because relying on DB can only provide one information.
         super.getMessage().setText(monthFinancials);  
-        super.getMessage().setReplyMarkup(GetInlineKeyboardMarkup.financeKB(getYearMonth().minusMonths(1), getYearMonth(), getYearMonth().plusMonths(1)));
+        super.getMessage().setReplyMarkup(KeyboardMarkups.financeKB(getYearMonth().minusMonths(1), getYearMonth(), getYearMonth().plusMonths(1)));
     }
 
     public YearMonth getYearMonth(){

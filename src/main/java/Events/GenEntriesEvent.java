@@ -20,14 +20,14 @@ public class GenEntriesEvent extends Event{
     private final String SPENDING_STRING = "\n<b>-------- SPENDINGS --------</b>\n\n";
     private final String EARNING_STRING = "\n<b>-------- EARNINGS --------</b>\n\n";
     private final LocalDate dateToday;
-    private YearMonth targetYM;
-    private LocalDate targetStartDate;
-    private LocalDate targetEndDate;
+    private final YearMonth targetYM;
+    private final LocalDate targetStartDate;
+    private final LocalDate targetEndDate;
 
 
 
-    public GenEntriesEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public GenEntriesEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
         dateToday = LocalDate.now();
         this.targetYM = YearMonth.of(dateToday.getYear(),dateToday.getMonthValue());
         this.targetStartDate = dateToday.withDayOfMonth(1);
@@ -50,12 +50,10 @@ public class GenEntriesEvent extends Event{
         String entries = getFormattedEntries(entryList, EARNING_STRING, eCategory);
 
         super.getMessage().setText(entries);
-        super.getMessage().setReplyMarkup(GetInlineKeyboardMarkup.entriesKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+        super.getMessage().setReplyMarkup(KeyboardMarkups.entriesKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
     }
 
     public void genMonthPlainEntries() throws SQLException{
-        super.getErrorLogs().add("========= Entries Events.Event Called ========= ");
-
         String entries = "<b>" + this.targetYM.getMonth() + " Entry List</b> \n\n";
 
         //SQL Query
@@ -69,7 +67,7 @@ public class GenEntriesEvent extends Event{
             String comment = entry.get(2);
             String entryNum = entry.get(3);
 
-            super.getErrorLogs().add("[Entries] Select query successful.");
+            System.out.println("[Entries] Select query successful.");
 
             if (typeOfEntry.equals("spend")) {
                 entries += "   " + entryNum + ".  - $" + cost + " : " + comment + "\n";

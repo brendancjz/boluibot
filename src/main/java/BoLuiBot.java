@@ -48,10 +48,12 @@ class BoLuiBot extends TelegramLongPollingBot {
 
                 Event event = null;
                 PSQL psql = new PSQL();
+                System.out.println("OPENED CONNECTION");
 
                 //Universal Commands. No need to update Query and check User.
                 if ("/start".equals(text)) {
-                    event = new StartEvent(message, errorLogs, chatId, name);
+                    System.out.println("=== Start Events.Event Called === ");
+                    event = new StartEvent(message, psql, chatId, name);
                     executeEvent(event, message, psql);
                     return; //Code ends here
                 }
@@ -59,84 +61,87 @@ class BoLuiBot extends TelegramLongPollingBot {
                 //When received a text, check the sender of this text and update text into database.
                 boolean isCheckGood = checkingQueryAndUser(chatId, text, psql);
                 if (!isCheckGood) {
-                    event = new NotRegisteredEvent(message, errorLogs, chatId);
+                    System.out.println("=== Not Registered Events.Event Called === ");
+                    event = new NotRegisteredEvent(message, psql, chatId);
                     executeEvent(event, message, psql);
                     return; //Code ends here
+                } else {
+                    System.out.println("=== User and Text All Good === ");
                 }
-                errorLogs.add("Received text and Checking user... isCheckGood " + isCheckGood);
 
                 //Retrieving Information
                 boolean isInputtingEntry = psql.getIsUserInputting(chatId);
                 String entryType = psql.getUserEntryType(chatId); //userType as defined in entries table
 
                 //Conditionals
-                boolean cancelCondition = text.length() >= 7 && text.startsWith("/cancel");
+                boolean cancelCondition = text.equals("Cancel") || text.length() >= 7 && text.startsWith("/cancel");
                 boolean goodCommandCondition = text.charAt(0) == '/' && !isInputtingEntry;
                 boolean badCommandCondition = !cancelCondition && text.charAt(0) == '/' && isInputtingEntry;
 
                 if (goodCommandCondition) {
                     switch (text) {
                         case "/entries":
-                            event = new GenEntriesEvent(message, errorLogs, chatId);
+                            System.out.println("========= Entries Events.Event Called ========= ");
+                            event = new GenEntriesEvent(message, psql, chatId);
                             break;
                         case "/spend":
-                            event = new SpendEvent(message, errorLogs, chatId);
+                            event = new SpendEvent(message, psql, chatId);
                             break;
                         case "/earn":
-                            event = new EarnEvent(message, errorLogs, chatId);
+                            event = new EarnEvent(message, psql, chatId);
                             break;
                         case "/edit":
-                            event = new EditEvent(message, errorLogs, chatId);
+                            event = new EditEvent(message, psql, chatId);
                             break;
                         case "/delete":
-                            event = new DeleteEvent(message, errorLogs, chatId);
+                            event = new DeleteEvent(message, psql, chatId);
                             break;
                         case "/s":
                         case "/e":
-                            event = new GenShortcutHelpEvent(message, errorLogs, chatId);
+                            event = new GenShortcutHelpEvent(message, psql, chatId);
                             break;
                         case "/finance":
-                            event = new GenFinancialsEvent(message, errorLogs, chatId);
+                            event = new GenFinancialsEvent(message, psql, chatId);
                             break;
                         case "/help":
-                            event = new HelpEvent(message, errorLogs, chatId);
+                            event = new HelpEvent(message, psql, chatId);
                             break;
                         case "/errorlogs":
-                            event = new ErrorLogsEvent(message, errorLogs, chatId);
+                            //event = new ErrorLogsEvent(message, psql, chatId);
                             break;
                         default:
-                            event = new GenShortcutEvent(message, errorLogs, chatId);
+                            event = new GenShortcutEvent(message, psql, chatId);
                             break;
                     }
 
                 }
                 else if (isInputtingEntry) {
                     if (cancelCondition) { //User cancels entry.
-                        event = new CancelEvent(message, errorLogs, chatId);
+                        event = new CancelEvent(message, psql, chatId);
 
                     } else if (badCommandCondition) {
-                        event = new BadCommandEvent(message, errorLogs, chatId);
+                        event = new BadCommandEvent(message, psql, chatId);
 
                     } else {
                         switch (entryType) {
                             case "spend":
-                                event = new SpendEvent(message, errorLogs, chatId);
+                                event = new SpendEvent(message, psql, chatId);
                                 break;
                             case "earn":
-                                event = new EarnEvent(message, errorLogs, chatId);
+                                event = new EarnEvent(message, psql, chatId);
                                 break;
                             case "edit":
-                                event = new EditEvent(message, errorLogs, chatId);
+                                event = new EditEvent(message, psql, chatId);
                                 break;
                             case "delete":
-                                event = new DeleteEvent(message, errorLogs, chatId);
+                                event = new DeleteEvent(message, psql, chatId);
                                 break;
                         }
                     }
 
                 }
                 else {
-                    event = new EchoEvent(message, errorLogs, chatId);
+                    event = new EchoEvent(message, psql, chatId);
 
                 }
 
@@ -162,15 +167,15 @@ class BoLuiBot extends TelegramLongPollingBot {
                 errorLogs.add(callData + " this is calldata");
 
                 if (callData.startsWith("numpad")) {
-                    event = new Events.GenNumPadInlineKeyboardEvent(message, errorLogs, Integer.parseInt(chatId), callData, prevAnswer, newMessage);
+                    event = new Events.GenNumPadInlineKeyboardEvent(message, psql, Integer.parseInt(chatId), callData, prevAnswer, newMessage);
                 } else if (callData.startsWith("fin")) {
-                    event = new Events.GenFinInlineKeyboardEvent(message, newMessage, errorLogs, Integer.parseInt(chatId), callData);
+                    event = new Events.GenFinInlineKeyboardEvent(message, newMessage, psql, Integer.parseInt(chatId), callData);
                     newMessage.enableHtml(true);
                 } else if (callData.startsWith("del")){
-                    event = new Events.GenDelInlineKeyboardEvent(message, newMessage, errorLogs, Integer.parseInt(chatId), callData);
+                    event = new Events.GenDelInlineKeyboardEvent(message, newMessage, psql, Integer.parseInt(chatId), callData);
                     newMessage.enableHtml(true);
                 } else if (callData.startsWith("entry")){
-                    event = new Events.GenEntriesInlineKeyboardEvent(message, newMessage, errorLogs,  Integer.parseInt(chatId), callData);
+                    event = new Events.GenEntriesInlineKeyboardEvent(message, newMessage, psql,  Integer.parseInt(chatId), callData);
                     message.enableHtml(true);
                 }
 
@@ -218,6 +223,7 @@ class BoLuiBot extends TelegramLongPollingBot {
         }
 
         psql.closeConnection();
+        System.out.println("CLOSED CONNECTION");
     }
 
     /**

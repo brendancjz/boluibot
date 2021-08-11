@@ -19,8 +19,8 @@ public class GenDelInlineKeyboardEvent extends Event{
     private boolean delMonth;
     private boolean delCancel;
 
-    public GenDelInlineKeyboardEvent(SendMessage message, EditMessageText newMessage, ArrayList<String> errorlogs, int chatId, String callData) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public GenDelInlineKeyboardEvent(SendMessage message, EditMessageText newMessage, PSQL psql, int chatId, String callData) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
         this.editMessage = newMessage;
         this.delMonth = false;
         this.delConfirm = false;
@@ -37,7 +37,7 @@ public class GenDelInlineKeyboardEvent extends Event{
                 int numOfEntriesMonth = super.getPSQL().getAllEntriesMonthCondensed(super.getChatId(), this.targetStartDate, this.targetEndDate).size();
                 if (numOfEntriesMonth > 0){
                     this.editMessage.setText("Entries of " + this.targetYM.getMonth() + " will be deleted. Press the button to confirm deletion");  
-                    this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKBSecond(this.targetYM)); 
+                    this.editMessage.setReplyMarkup(KeyboardMarkups.deleteKBSecond(this.targetYM));
                 } else {
                     this.editMessage.setText(Prompts.generateNoEntriesToDeletePrompt());  
                 } 
@@ -53,11 +53,11 @@ public class GenDelInlineKeyboardEvent extends Event{
             }
         } else if (delCancel) {
             genMonthPlainEntries();
-            this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+            this.editMessage.setReplyMarkup(KeyboardMarkups.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
         } 
         else {
             genMonthPlainEntries();
-            this.editMessage.setReplyMarkup(GetInlineKeyboardMarkup.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+            this.editMessage.setReplyMarkup(KeyboardMarkups.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
         }
     }
 
@@ -112,14 +112,13 @@ public class GenDelInlineKeyboardEvent extends Event{
             String comment = entry.get(2);
             String entryNum = entry.get(3);
 
-            super.getErrorLogs().add("[Entries] Select query successful.");
+            System.out.println("[Entries] Select query successful.");
 
             if (typeOfEntry.equals("spend")) {
                 entries += "   " + entryNum + ".  - $" + cost + " : " + comment + "\n";
             } else if (typeOfEntry.equals("earn")) {
                 entries += "   " + entryNum + ".  + $" + cost + " : " + comment + "\n";
             }
-            
         }
 
         entries += "\n<em>No. of entries found: <b>" + entryList.size() + "</b></em>";

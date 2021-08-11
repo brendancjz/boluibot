@@ -8,25 +8,12 @@ import java.util.ArrayList;
 
 public class ErrorLogsEvent extends Event{
 
-    public ErrorLogsEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public ErrorLogsEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
     }
 
     @Override
     public void generateEvent() throws SQLException {
-        String log = "------ Generating Error Logs Program Code ------ \n";
 
-        ArrayList<String> SQLerrorLogs = super.getPSQL().getErrorLogs();
-        for (String error : super.getErrorLogs()) {
-            log += error + "\n";
-        }
-
-        log += "------ Generating Error Logs SQL Queries ------ \n";
-
-        for (String error : SQLerrorLogs) {
-            log += error + "\n";
-        }
-        super.getMessage().setText(log);
-        super.getErrorLogs().clear();
     }
 }

@@ -8,12 +8,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class StartEvent extends Event{
-    private int targetYear;
-    private int targetMonth;
+    private final int targetYear;
+    private final int targetMonth;
     private final String name;
 
-    public StartEvent(SendMessage message, ArrayList<String> errorlogs, int chatId, String name) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public StartEvent(SendMessage message, PSQL psql, int chatId, String name) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
         LocalDate dateToday = LocalDate.now();
         this.targetYear = dateToday.getYear();
         this.targetMonth = dateToday.getMonthValue();
@@ -28,7 +28,6 @@ public class StartEvent extends Event{
 
     @Override
     public void generateEvent() throws SQLException {
-        super.getErrorLogs().add("=== Start Events.Event Called === ");
         super.getMessage().setText(Prompts.generateIntro(name));
     }
 }

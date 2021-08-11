@@ -9,8 +9,8 @@ import java.util.Arrays;
 
 public class EditEvent extends Event{
 
-    public EditEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public EditEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class EditEvent extends Event{
 
         switch (currEventState - 1) { //Very important
             case 1:
-                super.getErrorLogs().add(" === Events.Event State One Called === ");
+                System.out.println(" === Events.Event State One Called === ");
                 int numEntries = psql.getUserEntryCount(chatId);
                 if (numEntries > 0){
                     message.setText(Prompts.generateEventOneEditPrompt());
@@ -56,7 +56,7 @@ public class EditEvent extends Event{
                 }
                 break;
             case 2:
-                super.getErrorLogs().add("========= Events.Event State Two Called ========= ");
+                System.out.println("========= Events.Event State Two Called ========= ");
                     if (isNumericAndPositive(entryList[0]) && psql.checkEntryCountRange(chatId, Integer.parseInt(entryList[0]))) {
                         message.setText(Prompts.generateEventTwoEditPrompt());
                     } else {
@@ -65,22 +65,22 @@ public class EditEvent extends Event{
                     }
                 break;
             case 3:
-                super.getErrorLogs().add("========= Events.Event State Three Called ========= ");
+                System.out.println("========= Events.Event State Three Called ========= ");
                 String text = super.getPSQL().getUserText(chatId);
 
-                super.getErrorLogs().add(text);
+                System.out.println(text);
 
                 boolean isGood = validateEditedEntry(text);
                 boolean isDeleteInstead = isDeleteEntryInstead(text);
-                super.getErrorLogs().add("validate Edited Entry Good? " + isGood);
+                System.out.println("validate Edited Entry Good? " + isGood);
                 if (isDeleteInstead) {
-                    Event delEvent = new DeleteEvent(message, super.getErrorLogs(), chatId);
+                    Event delEvent = new DeleteEvent(message, super.getPSQL(), chatId);
                     delEvent.generateEvent();
                 } else if (isGood) { 
                     ArrayList<String> editEntry = getEditedEntryList(text);
                     if (!editEntry.isEmpty()) {
                         editEntry.add(entryList[0]); //ADDING Entry Number of this entry.
-                        super.getErrorLogs().add("edit entry: " + editEntry.toString());
+                        System.out.println("edit entry: " + editEntry.toString());
 
                         //getEditedEntry returns a string: display edited from ___ to XXX
                         entryList[1] = psql.getEditedEntry(chatId, editEntry);
@@ -92,7 +92,7 @@ public class EditEvent extends Event{
                     //REPEAT EVENT STATE TWO
                     psql.updateUserEventState(chatId, 2); //Decrement Events.Event State
 
-                    super.getErrorLogs().add("Edit Entry List has issues!");
+                    System.out.println("Edit Entry List has issues!");
                     message.setText(Prompts.generateEventThreeEditErrorPrompt());
                 }
                 break;
@@ -109,7 +109,7 @@ public class EditEvent extends Event{
 
         switch (currEventState - 1) { //Very important
             case 1:
-                GenEntriesEvent genEntriesEvent = new GenEntriesEvent(super.getMessage(), super.getErrorLogs(), super.getChatId());
+                GenEntriesEvent genEntriesEvent = new GenEntriesEvent(super.getMessage(), super.getPSQL(), super.getChatId());
                 genEntriesEvent.genMonthPlainEntries();
                 break;
             case 2:

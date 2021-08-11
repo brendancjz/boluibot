@@ -17,14 +17,12 @@ public class Event {
     private static final String INITIAL_ENTRY_COMMAND = "/null";
     private final SendMessage message;
     private final PSQL psql;
-    private final ArrayList<String> errorLogs;
     private final int chatId;
 
 
-    protected Event(SendMessage message, ArrayList<String> errorLogs, int chatId) throws URISyntaxException, SQLException {
+    protected Event(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
         this.message = message;
-        this.psql = new PSQL();
-        this.errorLogs = errorLogs;
+        this.psql = psql;
         this.chatId = chatId;
 
     }
@@ -35,10 +33,6 @@ public class Event {
 
     public PSQL getPSQL() {
         return this.psql;
-    }
-
-    public ArrayList<String> getErrorLogs() {
-        return this.errorLogs;
     }
 
     public int getChatId() {
@@ -91,8 +85,6 @@ public class Event {
         psql.updateUserEntryType(chatId, INITIAL_ENTRY_COMMAND);
         psql.resetEntryList(chatId);
         removeReplyKeyboardFromMessage(message);
-
-        psql.closeConnection();
     }
 
     private void removeReplyKeyboardFromMessage(SendMessage message) {

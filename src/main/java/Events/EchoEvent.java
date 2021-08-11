@@ -8,8 +8,8 @@ import java.util.ArrayList;
 
 public class EchoEvent extends Event{
 
-    public EchoEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public EchoEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
     }
 
     @Override

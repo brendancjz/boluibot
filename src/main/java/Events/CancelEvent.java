@@ -9,8 +9,8 @@ import java.util.ArrayList;
 public class CancelEvent extends Event{
     private final boolean CANCEL_INPUTTING = true;
 
-    public CancelEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public CancelEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
     }
 
     @Override

@@ -12,15 +12,11 @@ import java.util.ArrayList;
 public class DeleteEvent extends Event{
     private final LocalDate dateToday;
     private YearMonth targetYM;
-    private LocalDate targetStartDate; //determines the start of the range of date
-    private LocalDate targetEndDate;
 
-    public DeleteEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public DeleteEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
         dateToday = LocalDate.now();
         this.targetYM = YearMonth.of(dateToday.getYear(), dateToday.getMonthValue());
-        this.targetStartDate = dateToday.withDayOfMonth(1);
-        this.targetEndDate = dateToday.withDayOfMonth(this.dateToday.lengthOfMonth());
     }
 
     @Override
@@ -59,7 +55,7 @@ public class DeleteEvent extends Event{
 
         switch (currEventState - 1) { //Very important
             case 1:
-                super.getErrorLogs().add(" === Events.Event State One Called === ");
+                System.out.println(" === Events.Event State One Called === ");
 
                 int numEntries = psql.getUserEntryCount(chatId);
                 if (numEntries > 0) {
@@ -71,7 +67,7 @@ public class DeleteEvent extends Event{
 
                 break;
             case 2:
-                super.getErrorLogs().add("========= Events.Event State Two Called ========= ");
+                System.out.println("========= Events.Event State Two Called ========= ");
                 if (isAllEntryNumValid(entryList[0])) {
                     super.getMessage().setText(Prompts.generateEventTwoDeletePrompt(entryList[0]));
                 } else {
@@ -80,7 +76,7 @@ public class DeleteEvent extends Event{
                 }
                 break;
             case 3:
-                super.getErrorLogs().add("========= Events.Event State Three Called ========= ");
+                System.out.println("========= Events.Event State Three Called ========= ");
                 int[] delEntryNum = convertStringArrtoIntArr(entryList[0]);
                 message.setText(psql.getDeleteEntry(chatId, delEntryNum));
                 resetSystemToEventStateOne(chatId, true);
@@ -96,9 +92,9 @@ public class DeleteEvent extends Event{
 
         switch (currEventState - 1) { //Very important
             case 1:
-                GenEntriesEvent genEntriesEvent = new GenEntriesEvent(super.getMessage(), super.getErrorLogs(), super.getChatId());
+                GenEntriesEvent genEntriesEvent = new GenEntriesEvent(super.getMessage(), super.getPSQL(), super.getChatId());
                 genEntriesEvent.genMonthPlainEntries();
-                super.getMessage().setReplyMarkup(GetInlineKeyboardMarkup.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+                super.getMessage().setReplyMarkup(KeyboardMarkups.deleteKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
                 break;
             case 2:
             case 3:
@@ -107,7 +103,7 @@ public class DeleteEvent extends Event{
     }
 
     public boolean isAllEntryNumValid(String strNum) throws SQLException{
-        super.getErrorLogs().add(strNum + " this is entrynumlist");
+        System.out.println(strNum + " this is entrynumlist");
         boolean isValidInput = true;
         String[] delNumArr = strNum.split(",");
         for (int i = 0; i < delNumArr.length; i ++){

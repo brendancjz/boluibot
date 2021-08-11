@@ -4,12 +4,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.net.URISyntaxException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 public class GenShortcutEvent extends Event {
 
-    public GenShortcutEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public GenShortcutEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
     }
 
     @Override
@@ -18,7 +17,6 @@ public class GenShortcutEvent extends Event {
         String text = super.getPSQL().getUserText(chatId);
         PSQL psql = super.getPSQL();
         SendMessage message = super.getMessage();
-        ArrayList<String> errorLogs = super.getErrorLogs();
 
         //Text is confirmed to have a /.
         String[] textArr = text.split(" ");
@@ -32,7 +30,7 @@ public class GenShortcutEvent extends Event {
             }
 
             if (textArr.length < 4) { //Catch invalid inputs length
-                errorLogs.add("GENSHORTCUTEVENT Length less than 4");
+                System.out.println("GENSHORTCUTEVENT Length less than 4");
                 generateErrorMsgAndReturn(textArr);
                 return;
             }
@@ -55,7 +53,7 @@ public class GenShortcutEvent extends Event {
                 //SQL Queries
                 psql.updateUserEventState(chatId, 3);
             } else {
-                errorLogs.add("GENSHORTCUTEVENT isNum is False");
+                System.out.println("GENSHORTCUTEVENT isNum is False");
 
                 generateErrorMsgAndReturn(textArr);
                 return;
@@ -76,7 +74,7 @@ public class GenShortcutEvent extends Event {
 
             String[] entryListArr = {textArr[1], textArr[2], comment};
 
-            errorLogs.add("GENSHORTCUTEVENT reached to the end of generateEvent");
+            System.out.println("GENSHORTCUTEVENT reached to the end of generateEvent");
             message.setText("Reminder: your input should be as follows: \n[command] [category] [cost/earning] [comment]");
         }
     }
@@ -108,30 +106,29 @@ public class GenShortcutEvent extends Event {
         SendMessage message = super.getMessage();
         int chatId = super.getChatId();
         Events.PSQL psql = super.getPSQL();
-        ArrayList<String> errorLogs = super.getErrorLogs();
 
         String entryType = psql.getUserEntryType(chatId);
-        errorLogs.add("GENSHORTCUT entrytype: " + entryType);
+        System.out.println("GENSHORTCUT entrytype: " + entryType);
         Events.Event event = null;
         //in case where entryType = null because commands are too fast!!!
         switch (entryType) {
             case "spend":
-                event = new Events.SpendEvent(message, errorLogs, chatId);
+                event = new Events.SpendEvent(message, psql, chatId);
                 break;
             case "earn":
-                event = new Events.EarnEvent(message, errorLogs, chatId);
+                event = new Events.EarnEvent(message, psql, chatId);
                 break;
             case "edit":
-                event = new Events.EditEvent(message, errorLogs, chatId);
+                event = new Events.EditEvent(message, psql, chatId);
                 break;
             case "delete":
-                event = new Events.DeleteEvent(message, errorLogs, chatId);
+                event = new Events.DeleteEvent(message, psql, chatId);
                 break;
         }
         assert event != null;
         event.updateDatabase();
         event.generateEvent();
         resetSystemToEventStateOne(chatId, true); //Will reset no matter what.
-        errorLogs.add("GENSHORTCUTEVENT reached to the start of generateOtherEvent");
+        System.out.println("GENSHORTCUTEVENT reached to the start of generateOtherEvent");
     }
 }

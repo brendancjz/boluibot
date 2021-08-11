@@ -24,8 +24,8 @@ public class GenEntriesInlineKeyboardEvent extends Event{
     private LocalDate targetStartDate;
     private LocalDate targetEndDate;
 
-    public GenEntriesInlineKeyboardEvent(SendMessage message, EditMessageText newMessage, ArrayList<String> errorlogs, int chatId, String callData) throws URISyntaxException, SQLException {
-        super(message,errorlogs, chatId);
+    public GenEntriesInlineKeyboardEvent(SendMessage message, EditMessageText newMessage, PSQL psql, int chatId, String callData) throws URISyntaxException, SQLException {
+        super(message,psql, chatId);
         this.editMessage = newMessage;
         setInlineEntriesAction(callData);
     }
@@ -46,7 +46,7 @@ public class GenEntriesInlineKeyboardEvent extends Event{
         String entries = getFormattedEntries(entryList, EARNING_STRING, eCategory);
 
         super.getMessage().setText(entries);
-        super.getMessage().setReplyMarkup(GetInlineKeyboardMarkup.entriesKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+        super.getMessage().setReplyMarkup(KeyboardMarkups.entriesKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
     }
 
     public void setEditMonth(YearMonth yearMonth){

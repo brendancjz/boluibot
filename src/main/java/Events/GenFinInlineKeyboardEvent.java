@@ -14,8 +14,8 @@ public class GenFinInlineKeyboardEvent extends Event{
     private final EditMessageText editMessage;
     private YearMonth targetYM;
 
-    public GenFinInlineKeyboardEvent(SendMessage message, EditMessageText newMessage, ArrayList<String> errorlogs, int chatId, String callData) throws URISyntaxException, SQLException {
-        super(message,errorlogs, chatId);
+    public GenFinInlineKeyboardEvent(SendMessage message, EditMessageText newMessage, PSQL psql, int chatId, String callData) throws URISyntaxException, SQLException {
+        super(message,psql, chatId);
         this.editMessage = newMessage;
         setTargetYearMonth(callData);
     }
@@ -26,7 +26,7 @@ public class GenFinInlineKeyboardEvent extends Event{
         String monthFinancials = super.getPSQL().getMonthFinancials(super.getChatId(), this.targetYM);
         //The goal is to move information from DB to the unique keyboard that is generated. Because relying on DB can only provide one information.
         this.editMessage.setText(monthFinancials);  
-        this.editMessage.setReplyMarkup(Events.GetInlineKeyboardMarkup.financeKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+        this.editMessage.setReplyMarkup(KeyboardMarkups.financeKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
     }
 
     public void setTargetYearMonth(String callData){

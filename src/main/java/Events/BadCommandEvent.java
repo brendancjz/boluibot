@@ -8,8 +8,8 @@ import java.util.ArrayList;
 
 public class BadCommandEvent extends Event{
 
-    public BadCommandEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public BadCommandEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
     }
 
     @Override

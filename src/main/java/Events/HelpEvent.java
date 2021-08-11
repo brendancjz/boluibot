@@ -8,8 +8,8 @@ import java.util.ArrayList;
 
 public class HelpEvent extends Event{
 
-    public HelpEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public HelpEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
     }
 
     @Override

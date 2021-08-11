@@ -8,8 +8,8 @@ import java.util.ArrayList;
 
 public class GenShortcutHelpEvent extends Event{
 
-    public GenShortcutHelpEvent(SendMessage message, ArrayList<String> errorlogs, int chatId) throws URISyntaxException, SQLException {
-        super(message, errorlogs, chatId);
+    public GenShortcutHelpEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
+        super(message, psql, chatId);
     }
 
     @Override
