@@ -46,7 +46,7 @@ public class GenEntriesInlineKeyboardEvent extends Event{
         String entries = getFormattedEntries(entryList, EARNING_STRING, eCategory);
 
         super.getMessage().setText(entries);
-        super.getMessage().setReplyMarkup(KeyboardMarkups.entriesKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+        super.getMessage().setReplyMarkup(KeyboardMarkups.entriesKB(this.targetYM.minusMonths(1), this.targetYM.plusMonths(1)));
     }
 
     public void setEditMonth(YearMonth yearMonth){

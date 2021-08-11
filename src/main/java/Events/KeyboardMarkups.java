@@ -24,7 +24,7 @@ class KeyboardMarkups {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         InlineKeyboardButton button1 = new InlineKeyboardButton();
-        button1.setText("confirm deletion");
+        button1.setText("Confirm");
         button1.setCallbackData("del_confirm_" + currYearMonth.getYear() + "_" + currYearMonth.getMonthValue());
         row.add(button1);
 
@@ -33,7 +33,7 @@ class KeyboardMarkups {
         row = new ArrayList<>();
 
         InlineKeyboardButton button2 = new InlineKeyboardButton();
-        button2.setText("back");
+        button2.setText("Back");
         button2.setCallbackData("del_cancel_" + currYearMonth.getYear() + "_" + currYearMonth.getMonthValue()); //direct back
         row.add(button2);
 
@@ -45,7 +45,7 @@ class KeyboardMarkups {
     }
 
     //KeyboardMarkUps
-    public static InlineKeyboardMarkup entriesKB(YearMonth prevMonth, YearMonth currMonth, YearMonth nextMonth) {
+    public static InlineKeyboardMarkup entriesKB(YearMonth prevMonth, YearMonth nextMonth) {
         List<InlineKeyboardButton> row = new ArrayList<>();
 
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
@@ -180,7 +180,7 @@ class KeyboardMarkups {
         row = new ArrayList<>();
 
         InlineKeyboardButton button3 = new InlineKeyboardButton();
-        button3.setText("delete month");
+        button3.setText("Delete " + LocalDate.now().getMonth());
         button3.setCallbackData("del_month_" + currMonth.getYear() + "_" + currMonth.getMonthValue());
         row.add(button3);
 

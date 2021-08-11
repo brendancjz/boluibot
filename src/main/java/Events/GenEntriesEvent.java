@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalDate;
-import java.time.Year;
 import java.time.YearMonth;
 
 public class GenEntriesEvent extends Event{
@@ -50,7 +49,7 @@ public class GenEntriesEvent extends Event{
         String entries = getFormattedEntries(entryList, EARNING_STRING, eCategory);
 
         super.getMessage().setText(entries);
-        super.getMessage().setReplyMarkup(KeyboardMarkups.entriesKB(this.targetYM.minusMonths(1), this.targetYM, this.targetYM.plusMonths(1)));
+        super.getMessage().setReplyMarkup(KeyboardMarkups.entriesKB(this.targetYM.minusMonths(1), this.targetYM.plusMonths(1)));
     }
 
     public void genMonthPlainEntries() throws SQLException{
