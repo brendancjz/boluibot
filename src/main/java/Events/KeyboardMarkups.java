@@ -180,7 +180,7 @@ class KeyboardMarkups {
         row = new ArrayList<>();
 
         InlineKeyboardButton button3 = new InlineKeyboardButton();
-        button3.setText("Delete " + LocalDate.now().getMonth());
+        button3.setText("Delete " + currMonth.getMonth().name());
         button3.setCallbackData("del_month_" + currMonth.getYear() + "_" + currMonth.getMonthValue());
         row.add(button3);
 
