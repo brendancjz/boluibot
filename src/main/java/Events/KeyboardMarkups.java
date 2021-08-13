@@ -225,7 +225,6 @@ class KeyboardMarkups {
     public static ReplyKeyboardMarkup getSpendReplyKeyboardMarkup() {
         String[] sCategory = {"Entertainment","Food","Gift","Shopping","Transport", "Utilities", "Cancel"};
 
-
         KeyboardRow row = new KeyboardRow();
 
         List<KeyboardRow> keyboard = new ArrayList<>();
