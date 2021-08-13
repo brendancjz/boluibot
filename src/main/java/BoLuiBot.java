@@ -9,10 +9,8 @@ import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
 class BoLuiBot extends TelegramLongPollingBot {
-    private final ArrayList<String> errorLogs;
 
     BoLuiBot() throws URISyntaxException, SQLException {
-        this.errorLogs = new ArrayList<>();
     }
 
     @Override
@@ -22,7 +20,7 @@ class BoLuiBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "1763203814 :AAFbCkdniUC5EJpiLMb3Uq5GUIP7xj60Mpw";
+        return "1763203814:AAFbCkdniUC5EJpiLMb3Uq5GUIP7xj60Mpw";
     }
 
     @Override
@@ -164,8 +162,6 @@ class BoLuiBot extends TelegramLongPollingBot {
                 Event event = null;
                 PSQL psql = new PSQL();
 
-                errorLogs.add(callData + " this is calldata");
-
                 if (callData.startsWith("numpad")) {
                     event = new Events.GenNumPadInlineKeyboardEvent(message, psql, Integer.parseInt(chatId), callData, prevAnswer, newMessage);
                 } else if (callData.startsWith("fin")) {
@@ -203,7 +199,7 @@ class BoLuiBot extends TelegramLongPollingBot {
 
         event.generateOtherEvents();
         if (!msg.equals(message.toString())) { //Only proceed down if message changed.
-            errorLogs.add("Message has changed");
+            System.out.println("Message has changed");
             execute(message);
         }
 
@@ -218,7 +214,7 @@ class BoLuiBot extends TelegramLongPollingBot {
         event.generateOtherEvents();
 
         if (!msg.equals(message.toString())) { //Only proceed down if message changed.
-            errorLogs.add("Message has changed");
+            System.out.println("Message has changed");
             execute(message);
         }
 
