@@ -67,7 +67,7 @@ public class SpendEvent extends Event{
                 System.out.println(" === Events.Event State Two Called === ");
 
                 if (validateCategoryInput(entryList[0])) {
-                    prompt = Prompts.generateEventTwoSpendPrompt(entryList[0]); //Cost
+                    prompt = Prompts.generateEventTwoSpendPrompt(entryList[0]); //Category
                     message.setText(prompt);
                     message.setReplyMarkup(KeyboardMarkups.numpadKB());
                 } else {

@@ -15,7 +15,6 @@ public class EchoEvent extends Event{
     @Override
     public void generateEvent() throws SQLException {
         String text = super.getPSQL().getUserText(super.getChatId());
-
         super.getMessage().setText(Prompts.generateEchoPrompt(text));
     }
 }

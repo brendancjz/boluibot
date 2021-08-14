@@ -36,17 +36,14 @@ public class GenEntriesInlineKeyboardEvent extends Event{
         HashMap<String,String> entryList = super.getPSQL().getMonthSortedEntries(super.getChatId(), entryType, targetStartDate, targetEndDate);
         String entries = "<b>" + targetEndDate.getMonth() +" Entries </b>\n";
         entries += getFormattedEntries(entryList, SPENDING_STRING, sCategory);
-        super.getMessage().setText(entries);
-    }
 
-    @Override
-    public void generateOtherEvents() throws SQLException {
-        String entryType = "earn";
-        HashMap<String,String> entryList = super.getPSQL().getMonthSortedEntries(super.getChatId(), entryType, targetStartDate, targetEndDate);
-        String entries = getFormattedEntries(entryList, EARNING_STRING, eCategory);
+        entryType = "earn";
+        entryList = super.getPSQL().getMonthSortedEntries(super.getChatId(), entryType, targetStartDate, targetEndDate);
+        entries += getFormattedEntries(entryList, EARNING_STRING, eCategory);
 
-        super.getMessage().setText(entries);
-        super.getMessage().setReplyMarkup(KeyboardMarkups.entriesKB(this.targetYM.minusMonths(1), this.targetYM.plusMonths(1)));
+        this.editMessage.setText(entries);
+        this.editMessage.setReplyMarkup(KeyboardMarkups.entriesKB(this.targetYM.minusMonths(1), this.targetYM.plusMonths(1)));
+        this.editMessage.enableHtml(true);
     }
 
     public void setEditMonth(YearMonth yearMonth){
@@ -79,26 +76,30 @@ public class GenEntriesInlineKeyboardEvent extends Event{
                 entries += hashEntry.get(cat);
                 entries += "\n";
                 hashEntry.remove(cat);
-            } else {
+            }
+
+            /*
+            else { //Removing categories with no entries
+
                 entries += "<b>" + cat + "</b>\n";
                 entries += NO_ENTRY_STRING;
             }
+
+             */
         }
 
-        entries += OTHERS_STRING ;
+        if (hashEntry.size() != 0){
+            entries += OTHERS_STRING ;
 
-        if (hashEntry.size() == 0){
-            entries += NO_ENTRY_STRING;
+            for (Map.Entry<String, String> stringStringEntry : hashEntry.entrySet()) {
+                String category = ((stringStringEntry).getKey());
+                entries += "<b>" + category + "</b>\n";
+                entries += hashEntry.get(category);
+
+            }
         }
 
-        for (Map.Entry<String, String> stringStringEntry : hashEntry.entrySet()) {
-            String category = ((stringStringEntry).getKey());
-            entries += "<b>" + category + "</b>\n";
-            entries += hashEntry.get(category);
-
-        }
-
-        entries += "\n<em>No. of entries found: <b>" + totalEntrycount + "</b></em>";
+        entries += "\n<em>No. of entries found: <b>" + totalEntrycount + "</b></em>\n";
 
         return entries;
     }

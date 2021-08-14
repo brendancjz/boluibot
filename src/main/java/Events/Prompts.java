@@ -129,7 +129,7 @@ public class Prompts {
                 "To <em>view</em> financials, type /finance.\n\n" +
                 "Made a mistake while inputting an entry? Type /cancel to reset it. \n\n" +
                 "<b><u>Inputs Types</u></b> \n - Category e.g Food, Clothes <b>[Single word]</b>\n - Cost/Earning e.g $12.34, $1234 <b>[Numeric]</b>\n - Comment e.g Bought pizza for lunch <b>[Phrase]</b>\n\n"+
-                "Got the hang of inputting entries? Use these shortcuts, /s or /e, for an <em>effortless</em> entry. Tap on these commands to find out more!\n\n" +
+                "Got the hang of inputting entries? Use these shortcuts, /s or /e, for an <em>effortless</em> entry. Tap on these commands to find out more! \n\n" +
                 "<em>Last thing, Bo will sometimes echo your latest message.. </em>";
     }
 
@@ -160,7 +160,8 @@ public class Prompts {
         intro += "Type /help to see what I can do.\n\n" +
                 "Curious how I store your data? Well, I use PostgreSQL! It is an open-source database system with solid capabilities. PSQL is reliable and " +
                 "your data is stored in PSQL's encrypted databases, so nothing to worry about! Your secrets are safe with me... \n\n";
-        intro += "<em>You have established a connection with the server. This connection is 24/7.</em>\n";
+        intro += "<em>You have established a connection with the server. This connection is 24/7.</em>";
+
         return intro;
     }
     public static String generateCancelPrompt() {
@@ -195,7 +196,19 @@ public class Prompts {
     }
 
     public static String generateNoEntriesToEditPrompt() {
-        return "You do not have any entries to edit. Let's add one! Enter /spend or /earn to start inputting.";
+        return "You do not have any entries to delete. Let's add one! Enter /spend or /earn to start inputting.";
+    }
+
+    public static String generateEventOneFeedbackPrompt(){
+        return "!Talk to my manager! What would you like to tell my boss?";
+    }
+
+    public static String generateEventTwoFeedbackPrompt(){
+        return "okie dokie~ Thank you for your honesty :)";
+    }
+
+    public static String generateEmptyFeedbackPrompt(){
+        return "Hey... you gotta type something man... Try again or enter /cancel to save a bot (me)";
     }
 }
 

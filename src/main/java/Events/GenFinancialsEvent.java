@@ -9,7 +9,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 
 public class GenFinancialsEvent extends Event{
-    private YearMonth targetYM;
+    private final YearMonth targetYM;
 
     public GenFinancialsEvent(SendMessage message, PSQL psql, int chatId) throws URISyntaxException, SQLException {
         super(message, psql, chatId);

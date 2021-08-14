@@ -194,7 +194,6 @@ class KeyboardMarkups {
     public static ReplyKeyboardMarkup getEarnReplyKeyboardMarkup() {
         String[] eCategory = {"Allowance", "Income", "Investment", "Cancel"};
 
-
         KeyboardRow row = new KeyboardRow();
 
         List<KeyboardRow> keyboard = new ArrayList<>();
@@ -224,6 +223,7 @@ class KeyboardMarkups {
 
     public static ReplyKeyboardMarkup getSpendReplyKeyboardMarkup() {
         String[] sCategory = {"Entertainment","Food","Gift","Shopping","Transport", "Utilities", "Cancel"};
+
 
         KeyboardRow row = new KeyboardRow();
 

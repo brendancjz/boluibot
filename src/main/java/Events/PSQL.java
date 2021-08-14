@@ -19,11 +19,9 @@ public class PSQL {
     private static final String[] INITIAL_ENTRY_LIST = new String[3];
     private static final String INITIAL_ENTRY_TYPE = "null";
     private static final int INITIAL_FINANCIAL_VALUE = 0; //for variables like total_spending/earning/entry_count
-    private final ArrayList<String> errorLogs;
 
     public PSQL() throws URISyntaxException, SQLException {
         this.connection = getConnection();
-        this.errorLogs = new ArrayList<>();
     }
 
     //Users table Queries
@@ -43,7 +41,7 @@ public class PSQL {
         boolean userExists = isUserRegistered(chatId);
 
         if (!userExists) {
-            errorLogs.add("This user is not registered yet.");
+            System.out.println("This user is not registered yet.");
 
             int userId = 0;
 
@@ -81,10 +79,10 @@ public class PSQL {
 
         int rowsInserted = preparedStatement.executeUpdate();
         if (rowsInserted > 0) {
-            errorLogs.add("Successful registration.");
-            errorLogs.add("[" + chatId + "] has been registered in users.");
+            System.out.println("Successful registration.");
+            System.out.println("[" + chatId + "] has been registered in users.");
         } else {
-            errorLogs.add("Unsuccessful registration in users.");
+            System.out.println("Unsuccessful registration in users.");
         }
     }
 
@@ -96,7 +94,7 @@ public class PSQL {
      * @throws SQLException Throws an exception when query is unsuccessful
      */
     public void addEntryListItem(int chatId, String text, int currEventState) throws SQLException {
-        errorLogs.add("Adding entry list item at event state: " + currEventState);
+        System.out.println("Adding entry list item at event state: " + currEventState);
         //Get all the entry list first
         String entryList = "";
 
@@ -173,7 +171,7 @@ public class PSQL {
      * @throws SQLException Throws an exception when query is unsuccessful
      */
     public int getUserEventState(int chatId) throws SQLException {
-        errorLogs.add("-- Getting User Events.Event State --");
+        System.out.println("-- Getting User Events.Event State --");
 
         int eventState = 0;
 
@@ -181,7 +179,7 @@ public class PSQL {
         ResultSet resultSet = getUsersDataResultSet(chatId);
         while (resultSet.next()) {
             eventState = resultSet.getInt("event_state");
-            errorLogs.add("Current Events.Event State: " + eventState);
+            System.out.println("Current Events.Event State: " + eventState);
         }
 
 
@@ -201,7 +199,7 @@ public class PSQL {
         ResultSet resultSet = getUsersDataResultSet(chatId);
         while (resultSet.next()) {
             isInputting = resultSet.getBoolean("is_inputting");
-            errorLogs.add("[" + chatId + "] Current is_inputting: " + isInputting);
+            System.out.println("[" + chatId + "] Current is_inputting: " + isInputting);
         }
 
         return isInputting;
@@ -221,7 +219,7 @@ public class PSQL {
         ResultSet resultSet = getUsersDataResultSet(chatId);
         while (resultSet.next()) {
             entryType = resultSet.getString("entry_type");
-            errorLogs.add("Current entry_type: " + entryType);
+            System.out.println("Current entry_type: " + entryType);
         }
 
         return entryType;
@@ -259,7 +257,7 @@ public class PSQL {
         while (resultSet.next()) {
             userExists = true;
             String selectedChatId = resultSet.getString("chat_id");
-            errorLogs.add("[" + selectedChatId + "] has been selected.");
+            System.out.println("[" + selectedChatId + "] has been selected.");
         }
 
         return userExists;
@@ -280,7 +278,7 @@ public class PSQL {
      * @throws SQLException Throws an exception when query is unsuccessful
      */
     public void resetEntryList(int chatId) throws SQLException {
-        errorLogs.add("Resetting Entry List. This is because entry has been completed or cancelled.");
+        System.out.println("Resetting Entry List. This is because entry has been completed or cancelled.");
 
         String sql = "UPDATE users SET entry_list=? WHERE chat_id=? ";
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -288,10 +286,10 @@ public class PSQL {
         statement.setInt(2, chatId);
         int rowsInserted = statement.executeUpdate();
         if ((rowsInserted > 0)) {
-            errorLogs.add("[Reset Entry List] Update query successful.");
+            System.out.println("[Reset Entry List] Update query successful.");
 
         } else {
-            errorLogs.add("[Reset Entry List] Update query failed.");
+            System.out.println("[Reset Entry List] Update query failed.");
         }
     }
 
@@ -304,7 +302,7 @@ public class PSQL {
         try {
             isInputting = !isInputting;
 
-            errorLogs.add("After updating, isInputting should now be: " + isInputting);
+            System.out.println("After updating, isInputting should now be: " + isInputting);
 
             String sql = "UPDATE users SET is_inputting=? WHERE chat_id=? ";
             PreparedStatement statement = connection.prepareStatement(sql);
@@ -312,10 +310,10 @@ public class PSQL {
             statement.setInt(2, chatId);
             int rowsInserted = statement.executeUpdate();
             if ((rowsInserted > 0)) {
-                errorLogs.add("[is_inputting] Update query successful.");
+                System.out.println("[is_inputting] Update query successful.");
 
             } else {
-                errorLogs.add("[is_inputting] Update query failed.");
+                System.out.println("[is_inputting] Update query failed.");
             }
 
         } catch (SQLException throwables) {
@@ -337,10 +335,10 @@ public class PSQL {
         statement.setInt(2, chatId);
         int rowsInserted = statement.executeUpdate();
         if ((rowsInserted > 0)) {
-            errorLogs.add("[Entry List] Update query successful.");
+            System.out.println("[Entry List] Update query successful.");
 
         } else {
-            errorLogs.add("[Entry List] Update query failed.");
+            System.out.println("[Entry List] Update query failed.");
         }
     }
 
@@ -357,7 +355,7 @@ public class PSQL {
         } else {
             currEventState++;
         }
-        errorLogs.add("-- Updating User Events.Event State -- It is now: " + currEventState);
+        System.out.println("-- Updating User Events.Event State -- It is now: " + currEventState);
 
         String sql = "UPDATE users SET event_state=? WHERE chat_id=? ";
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -365,10 +363,10 @@ public class PSQL {
         statement.setInt(2, chatId);
         int rowsInserted = statement.executeUpdate();
         if ((rowsInserted > 0)) {
-            errorLogs.add("[Events.Event State] Update query successful.");
+            System.out.println("[Events.Event State] Update query successful.");
 
         } else {
-            errorLogs.add("[Events.Event State] Update query failed.");
+            System.out.println("[Events.Event State] Update query failed.");
         }
     }
 
@@ -379,11 +377,11 @@ public class PSQL {
      * @throws SQLException Throws an exception when query is unsuccessful
      */
     public void updateUserEntryType(int chatId, String command) throws SQLException {
-        errorLogs.add("---------------- Updating User Entry Type");
+        System.out.println("---------------- Updating User Entry Type");
 
         //Example: command: /spend , entryType: spend.
         String entryType = command.substring(1);
-        errorLogs.add("entry_type is now: " + entryType);
+        System.out.println("entry_type is now: " + entryType);
 
         String sql = "UPDATE users SET entry_type=? WHERE chat_id=? ";
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -391,10 +389,10 @@ public class PSQL {
         statement.setInt(2, chatId);
         int rowsInserted = statement.executeUpdate();
         if ((rowsInserted > 0)) {
-            errorLogs.add("[entry_type] Update query successful.");
+            System.out.println("[entry_type] Update query successful.");
 
         } else {
-            errorLogs.add("[entry_type] Update query failed.");
+            System.out.println("[entry_type] Update query failed.");
         }
     }
 
@@ -411,9 +409,9 @@ public class PSQL {
         statement.setInt(2, chatId);
         int rowsInserted = statement.executeUpdate();
         if ((rowsInserted > 0)) {
-            errorLogs.add("[Text] Update query successful.");
+            System.out.println("[Text] Update query successful.");
         } else {
-            errorLogs.add("[Text] Update query failed.");
+            System.out.println("[Text] Update query failed.");
         }
     }
 
@@ -460,9 +458,9 @@ public class PSQL {
 
         int rowsInserted = preparedStatement.executeUpdate();
         if (rowsInserted > 0) {
-            errorLogs.add("New entry row added.");
+            System.out.println("New entry row added.");
         } else {
-            errorLogs.add("Failed to add new entry row");
+            System.out.println("Failed to add new entry row");
         }
         preparedStatement.close();
     }
@@ -481,9 +479,9 @@ public class PSQL {
         int rowsDeleted = delstatement.executeUpdate(); //problem happens when executeQuery is called... -> changed to executeUpdate (for edit/delete)
 
         if (rowsDeleted > 0) {
-            errorLogs.add("Delete query successful");
+            System.out.println("Delete query successful");
         } else {
-            errorLogs.add("Delete query unsuccessful");
+            System.out.println("Delete query unsuccessful");
         }
     }
 
@@ -499,9 +497,9 @@ public class PSQL {
         int rowsDeleted = delstatement.executeUpdate(); 
 
         if (rowsDeleted > 0) {
-            errorLogs.add("Delete Month successful");
+            System.out.println("Delete Month successful");
         } else {
-            errorLogs.add("Delete Month unsuccessful");
+            System.out.println("Delete Month unsuccessful");
         }
 
     }
@@ -523,7 +521,7 @@ public class PSQL {
 
         HashMap<String,String> hashEntry = new HashMap<>();
         ResultSet resultSet = getEntrybyTypeResultSet(chatId, entryType, startDate, endDate);
-        errorLogs.add("Query successful!");
+        System.out.println("Query successful!");
         int count = 0;
         while (resultSet.next()){
             
@@ -551,14 +549,6 @@ public class PSQL {
         return hashEntry;
     }
 
-    /**
-     * Alternative to getAllEntries
-     * @param chatId
-     * @param startDate
-     * @param endDate
-     * @return
-     * @throws SQLException
-     */
     public ArrayList<ArrayList<String>> getAllEntriesMonthCondensed(int chatId, LocalDate startDate, LocalDate endDate) throws SQLException {
         ArrayList<ArrayList<String>> entryList = new ArrayList<>();
         ResultSet resultSet = getMonthEntryResultSet(chatId, startDate, endDate);
@@ -578,9 +568,9 @@ public class PSQL {
         }
 
         if (entryList.size() > 0) {
-            errorLogs.add("[Entries] Select query successful.");
+            System.out.println("[Entries] Select query successful.");
         } else {
-            errorLogs.add("[Entries] Select query unsuccessful.");
+            System.out.println("[Entries] Select query unsuccessful.");
         }
 
         return entryList;
@@ -612,16 +602,16 @@ public class PSQL {
         }
 
         if (entryList.size() > 0) {
-            errorLogs.add("[Entries] Select query successful.");
+            System.out.println("[Entries] Select query successful.");
         } else {
-            errorLogs.add("[Entries] Select query unsuccessful.");
+            System.out.println("[Entries] Select query unsuccessful.");
         }
 
         return entryList;
     }    
 
     private ResultSet getEntrybyTypeResultSet(int chatId, String entryType, LocalDate startDate, LocalDate endDate) throws SQLException {
-        errorLogs.add("Doing query...");
+        System.out.println("Doing query...");
         ResultSet resultSet = getUsersDataResultSet(chatId);
         int userId = 0;
         java.sql.Date sDate = java.sql.Date.valueOf(startDate);
@@ -890,7 +880,7 @@ public class PSQL {
         ResultSet resultSet = statement.executeQuery();
 
         if (!resultSet.isBeforeFirst()) {
-            errorLogs.add("SOME ENTRY EXIST FOR NEXT YEAR!!");
+            System.out.println("SOME ENTRY EXIST FOR NEXT YEAR!!");
             addNewFinancials(userId, year, month);
             return getMonthSpendEarnResultSet(userId, year, month);
         } else {
@@ -919,7 +909,7 @@ public class PSQL {
             preparedStatement.setInt(5, insertYearMonth.getMonthValue());
             preparedStatement.executeUpdate();
             insertYearMonth = insertYearMonth.plusMonths(1);
-            errorLogs.add("YearMonth: " + insertYearMonth.toString());
+            System.out.println("YearMonth: " + insertYearMonth.toString());
         }
 
     }
@@ -1046,8 +1036,8 @@ public class PSQL {
 
         //Get old entry from Entries table
         String[] oldEntry = getSpecificEntry(chatId, userEntryNum);
-        errorLogs.add("oldEntry " + Arrays.toString(oldEntry));
-        errorLogs.add("edited entry " + editEntryArr.toString());
+        System.out.println("oldEntry " + Arrays.toString(oldEntry));
+        System.out.println("edited entry " + editEntryArr.toString());
 
         if (oldEntry[0].equals("spend")) {
             editedEntry += userEntryNum + ".  - " + oldEntry[1] + " $" + oldEntry[2] + " : " + oldEntry[3] + "\n";
@@ -1082,14 +1072,14 @@ public class PSQL {
         Date entryDate = new Date();
 
         ResultSet resultSet = getUsersDataResultSet(chatId);
-        errorLogs.add("DELETE: run getUSERS");
+        System.out.println("DELETE: run getUSERS");
         while (resultSet.next()){
             userId = resultSet.getInt("user_id");
         }
 
         for (int userEntryNum : delEntryNumArr) {
             resultSet = getSpecificEntryResultSet(userId, userEntryNum);
-            errorLogs.add("DELETE: run getSPECIFICENTRY");
+            System.out.println("DELETE: run getSPECIFICENTRY");
 
             while (resultSet.next()) {
                 entriesId = resultSet.getInt("entries_id");
@@ -1100,15 +1090,15 @@ public class PSQL {
             }
 
             //Obtain date of insertion
-            //errorLogs.add("entryDate: " +entryDate.toString());
+            //System.out.println("entryDate: " +entryDate.toString());
 
             // //Have to convert Date (from sql) data type to LocalDate (which is easier to use)
             LocalDate localDate = LocalDate.parse(entryDate.toString());
             int entryYear = localDate.getYear();
             int entryMonth = localDate.getMonthValue();
 
-            //errorLogs.add("LocalDate: " + localDate.toString());
-            //errorLogs.add("entryMonth: " + entryMonth );
+            //System.out.println("LocalDate: " + localDate.toString());
+            //System.out.println("entryMonth: " + entryMonth );
 
             if (entryType.equals("spend")) {
                 entry += "   " + userEntryNum + ".  - $" + cost + " : " + comment + "\n";
@@ -1117,11 +1107,11 @@ public class PSQL {
             }
 
             updateEntryCountAndNum(chatId, userEntryNum, delAmount);
-            errorLogs.add("DELETE: update EntryCount");
+            System.out.println("DELETE: update EntryCount");
             updateFinancial(userId, entryYear, entryMonth, cost, delMultiplier, entryType);
-            errorLogs.add("DELETE: update Financials");
+            System.out.println("DELETE: update Financials");
             deleteEntryRow(entriesId);
-            errorLogs.add("DELETE: Deleted item");
+            System.out.println("DELETE: Deleted item");
 
         }
 
@@ -1160,17 +1150,17 @@ public class PSQL {
         }
 
         deleteEntryByTime(userId, startDate, endDate);
-        errorLogs.add("DELETE: Deleted item");
+        System.out.println("DELETE: Deleted item");
 
         lastEntryNum = firstEntryNum + counter;
         updateEntryCountAndNum(chatId, lastEntryNum, -(counter));
-        errorLogs.add("DELETE: update EntryCount");
+        System.out.println("DELETE: update EntryCount");
 
         int entryYear = startDate.getYear();
         int entryMonth = startDate.getMonthValue();
         updateFinancial(userId, entryYear, entryMonth, totalSpending, delMultiplier, "spend");
         updateFinancial(userId, entryYear, entryMonth, totalEarning, delMultiplier, "earn");
-        errorLogs.add("DELETE: update Financials");
+        System.out.println("DELETE: update Financials");
 
         String entry = counter + " entries from " + startDate.getMonth() + " have been deleted.";
 
@@ -1207,7 +1197,7 @@ public class PSQL {
      * @throws SQLException Throws an exception when query is unsuccessful
      */
     public void editEntryRow(int chatId, ArrayList<String> editEntryArr, String[] oldEntry) throws SQLException {
-        errorLogs.add("Editing Entries");
+        System.out.println("Editing Entries");
 
         int userEntryNum = Integer.parseInt(editEntryArr.get(4));
 
@@ -1253,17 +1243,17 @@ public class PSQL {
         } 
 
         if (!editEntryArr.get(1).equals(oldEntry[1])) { //Category has changed
-            errorLogs.add("EDIT: CATEGORY");
+            System.out.println("EDIT: CATEGORY");
             updateEntriesCategory(selectedUserId, userEntryNum, editEntryArr.get(1));
         }
 
         if (!editEntryArr.get(2).equals(oldEntry[2])) { //amount has changed
-            errorLogs.add("EDIT: AMOUNT");
+            System.out.println("EDIT: AMOUNT");
             int updateMultiplier = 1;
             double oldValue = Double.parseDouble(oldEntry[2]);
             double newValue = Double.parseDouble(editEntryArr.get(2));
             double difference = newValue-oldValue;
-            errorLogs.add("EDIT Difference: " + difference);
+            System.out.println("EDIT Difference: " + difference);
 
             //updating Entries table
             updateEntriesCostEarning(selectedUserId, userEntryNum, newValue);
@@ -1273,7 +1263,7 @@ public class PSQL {
         }
 
         if (!editEntryArr.get(3).equals(oldEntry[3])){
-            errorLogs.add("EDIT: COMMENT");
+            System.out.println("EDIT: COMMENT");
 
             updateEntriesComment(selectedUserId, userEntryNum, editEntryArr.get(3));
         }
@@ -1283,7 +1273,7 @@ public class PSQL {
     }
 
     public void updateEntries(int chatId) throws SQLException {
-        errorLogs.add("Updating Entries");
+        System.out.println("Updating Entries");
         //================================= [Model]
         //Thinking in terms of SQL, we need to create a row in entries table.
 
@@ -1308,7 +1298,7 @@ public class PSQL {
         double cost = Double.parseDouble(entryListArr[1]);
         String comment = entryListArr[2];
         addNewEntryRow(entryType, entryCount+1, category, cost, comment, selectedUserId);
-        errorLogs.add("Inserted " + entryType + " " + category + " " + cost + " " + comment + " " + selectedUserId);
+        System.out.println("Inserted " + entryType + " " + category + " " + cost + " " + comment + " " + selectedUserId);
 
         Date entryDate = new Date();
         //Obtain date of insertion
@@ -1317,7 +1307,7 @@ public class PSQL {
             entryDate = resultSet.getDate("entry_date");
         }
 
-        errorLogs.add("entryDate: " +entryDate.toString());
+        System.out.println("entryDate: " +entryDate.toString());
 
         // //Have to convert Date (from sql) data type to LocalDate (which is easier to use)
         LocalDate localDate = LocalDate.parse(entryDate.toString());
@@ -1332,23 +1322,44 @@ public class PSQL {
         resultSet.close();
 
     }
+    //Feedbacks table query
+    public void addNewFeedbackRow(int chatId, String feedback) throws SQLException {
+        String sql = "INSERT INTO feedbacks (chat_id, feedback) VALUES (?,?)";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setInt(1, chatId);
+        statement.setString(2, feedback);
+        statement.executeUpdate();
 
+    }
+
+    public ResultSet getAllFeedbackRowsResultSet() throws SQLException {
+        String sql = "SELECT * from feedbacks";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        return statement.executeQuery();
+
+    }
+
+    public ArrayList<String> getAllFeedbackRows() throws SQLException{
+        String[] headers = {"fb_id", "chat_id", "feedback", "feedback_date"};
+        String headersString = "fb_id, chat_id, feedback, feedback_date\n";
+        ArrayList<String> feedbackData = new ArrayList<>();
+        feedbackData.add(headersString); 
+        
+        ResultSet resultSet = getAllFeedbackRowsResultSet();
+        while (resultSet.next()){
+            String feedbackRow = "";
+            feedbackRow += resultSet.getInt(headers[0]) + "," + resultSet.getInt(headers[1]) 
+            + "," + resultSet.getString(headers[2]) + "," + resultSet.getDate(headers[3]).toString() + "\n";
+            
+            feedbackData.add(feedbackRow);
+        }
+        return feedbackData;
+    }
 
     //Miscellaneous Code
     //--------------------------------------------------------------------------
     //--------------------------------------------------------------------------
     //--------------------------------------------------------------------------
-
-    /**
-     * This method gets the error logs
-     * @return Returns the ArrayList<String> of the error logs
-     */
-    public ArrayList<String> getErrorLogs() {
-        ArrayList<String> logs = (ArrayList<String>) errorLogs.clone();
-        errorLogs.clear();
-
-        return logs;
-    }
 
     /**
      * This method gets a connection with the POSTGRESQL database through JDBC
@@ -1369,7 +1380,6 @@ public class PSQL {
     public void closeConnection() {
         try {
             connection.close();
-            System.out.println("Is Connection closed?   " + connection.isClosed());
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1379,4 +1389,3 @@ public class PSQL {
 
 
 }
-    

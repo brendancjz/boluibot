@@ -11,6 +11,7 @@ public class StartEvent extends Event{
     private final int targetYear;
     private final int targetMonth;
     private final String name;
+    private boolean userAlreadyExists = false;
 
     public StartEvent(SendMessage message, PSQL psql, int chatId, String name) throws URISyntaxException, SQLException {
         super(message, psql, chatId);
@@ -22,12 +23,18 @@ public class StartEvent extends Event{
 
     @Override
     public void updateDatabase() throws SQLException {
-        super.getPSQL().addNewUser(super.getChatId(),
-                super.getPSQL().getUserText(super.getChatId()), targetYear, targetMonth);
+        userAlreadyExists = super.getPSQL().isUserRegistered(super.getChatId());
+        super.getPSQL().addNewUser(super.getChatId(), super.getPSQL().getUserText(super.getChatId()), targetYear, targetMonth);
+
     }
 
     @Override
     public void generateEvent() throws SQLException {
-        super.getMessage().setText(Prompts.generateIntro(name));
+        if (!userAlreadyExists) {
+            super.getMessage().setText(Prompts.generateIntro(name));
+        } else {
+            super.getMessage().setText(Prompts.generateIntro(name) + " <em>It looks like you are already registered in the database!</em>");
+        }
+
     }
 }
