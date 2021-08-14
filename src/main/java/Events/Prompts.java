@@ -200,11 +200,11 @@ public class Prompts {
     }
 
     public static String generateEventOneFeedbackPrompt(){
-        return "!Talk to my manager! What would you like to tell my boss?";
+        return "Yay, feedback! What would you like to tell my creator? Type /cancel to cancel feedback entry.";
     }
 
     public static String generateEventTwoFeedbackPrompt(){
-        return "okie dokie~ Thank you for your honesty :)";
+        return "Thanks for your honesty! I appreciate it.";
     }
 
     public static String generateEmptyFeedbackPrompt(){
