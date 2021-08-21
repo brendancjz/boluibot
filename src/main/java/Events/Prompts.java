@@ -50,7 +50,7 @@ public class Prompts {
     }
 
     public static String generateEventOneDeletePrompt() {
-        return "Which entry(entries) would you like to delete? Separate entry number(s) with commas as such: \n[Entry Num],[Entry Num],[EntryNum].";
+        return "Which entry(entries) would you like to delete? Separate entry number(s) with commas as such: \n[Entry Num]: [Entry Num]: [EntryNum].";
     }
     public static String generateEventTwoDeletePrompt(String entryNum) {
         return "Entry " + entryNum + ". will be deleted. " +
@@ -117,7 +117,7 @@ public class Prompts {
                 generateEditInputPrompt();
     }
     private static String generateEditInputPrompt() {
-        return "Ensure that your input is as follows: \ncommand : category : cost/earning : comment";
+        return "Ensure that your input is as follows: \ncommand: category: cost/earning: comment";
     }
 
     public static String generateHelpPrompt() {
@@ -126,7 +126,7 @@ public class Prompts {
                 "To <em>view</em> entries, type /entries. \n" +
                 "To <em>edit</em> entries, type /edit. \n" +
                 "To <em>delete</em> entries, type /delete. \n" +
-                "To <em>view</em> financials, type /finance.\n\n" +
+                "To <em>view</em> financials, type /piggybank.\n\n" +
                 "Made a mistake while inputting an entry? Type /cancel to reset it. \n\n" +
                 "<b><u>Inputs Types</u></b> \n - Category e.g Food, Clothes <b>[Single word]</b>\n - Cost/Earning e.g $12.34, $1234 <b>[Numeric]</b>\n - Comment e.g Bought pizza for lunch <b>[Phrase]</b>\n\n"+
                 "Got the hang of inputting entries? Use these shortcuts, /s or /e, for an <em>effortless</em> entry. Tap on these commands to find out more! \n\n" +
@@ -155,11 +155,10 @@ public class Prompts {
         intro += "Hi " + name +
                 "! I am Bo Lui and I welcome you to Sir Brendan's financial tracker to track how deep your pockets are! Sir Brendan is my creator.\n\n";
         intro += "I am your personal finance bot! I store your spendings and earnings in a simple way. You can view, edit, delete and add entries.\n\n";
-        intro += "For now, I am in the beta stages and so, I have limited functionalities. I may crash on you. I probably will crash on you... " +
-                "But! Your opinion and feedback to the creator will surely improve my system, so thank you for using me! \n\n";
+        intro += "For now, I am in the beta stages and so, your opinions and feedback to the creator will surely improve my system, so thank you for using me! \n\n";
         intro += "Type /help to see what I can do.\n\n" +
                 "Curious how I store your data? Well, I use PostgreSQL! It is an open-source database system with solid capabilities. PSQL is reliable and " +
-                "your data is stored in PSQL's encrypted databases, so nothing to worry about! Your secrets are safe with me... \n\n";
+                "your data is stored in PSQL's encrypted databases, so nothing to worry about! Your records are safe with me. \n\n";
         intro += "<em>You have established a connection with the server. This connection is 24/7.</em>";
 
         return intro;

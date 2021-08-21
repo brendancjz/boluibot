@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.Year;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class DeleteEvent extends Event{
     private final LocalDate dateToday;
@@ -69,7 +70,8 @@ public class DeleteEvent extends Event{
             case 2:
                 System.out.println("========= Events.Event State Two Called ========= ");
                 if (isAllEntryNumValid(entryList[0])) {
-                    super.getMessage().setText(Prompts.generateEventTwoDeletePrompt(entryList[0]));
+                    message.setText(Prompts.generateEventTwoDeletePrompt(entryList[0]));
+                    message.setReplyMarkup(KeyboardMarkups.getDelReplyKeyboardMarkup());
                 } else {
                     super.getPSQL().updateUserEventState(super.getChatId(), 1); //Decrement Events.Event State
                     super.getMessage().setText(Prompts.generateInputtingEntryNumErrorPrompt(entryList[0]));
@@ -105,7 +107,11 @@ public class DeleteEvent extends Event{
     public boolean isAllEntryNumValid(String strNum) throws SQLException{
         System.out.println(strNum + " this is entrynumlist");
         boolean isValidInput = true;
-        String[] delNumArr = strNum.split(",");
+
+        String[] delNumArr = removeExtraSpace(strNum);
+
+        System.out.println(strNum + " this is updated entrynumlist");
+
         for (int i = 0; i < delNumArr.length; i ++){
             if (!isNumericAndPositive(delNumArr[i]) || !super.getPSQL().checkEntryCountRange(super.getChatId(), Integer.parseInt(delNumArr[i]))){
                 isValidInput = false;
@@ -114,8 +120,20 @@ public class DeleteEvent extends Event{
         return isValidInput;
     }
 
+    private String[] removeExtraSpace(String strNum) {
+        ArrayList<String> delNumList = new ArrayList<>(Arrays.asList(strNum.split(":")));
+        System.out.println(delNumList.toString());
+
+        for (int j = 0; j < delNumList.size(); j++) {
+            delNumList.set(j, delNumList.get(j).replaceAll(" ", ""));
+            System.out.println(delNumList.get(j));
+        }
+
+        return delNumList.toArray(new String[delNumList.size()]);
+    }
+
     public int[] convertStringArrtoIntArr(String strEntryNum){
-        String[] delNumArr = strEntryNum.split(",");
+        String[] delNumArr = removeExtraSpace(strEntryNum);
         int numDelEntries = delNumArr.length;
         int[] delEntryNum = new int[numDelEntries];
         for (int i = 0; i < numDelEntries; i++){

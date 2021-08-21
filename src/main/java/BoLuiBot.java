@@ -4,6 +4,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -11,10 +12,13 @@ import java.io.*;
 import java.net.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 class BoLuiBot extends TelegramLongPollingBot {
 
-    BoLuiBot() throws URISyntaxException, SQLException {
+    BoLuiBot() {
+
     }
 
     @Override
@@ -36,6 +40,7 @@ class BoLuiBot extends TelegramLongPollingBot {
         // /Setgoal for user to set target amount spend for each category (LOW)
         // We check if the update has a message and the message has text
 
+
         try {
 
             if (update.hasMessage() && update.getMessage().hasText()) {
@@ -43,12 +48,20 @@ class BoLuiBot extends TelegramLongPollingBot {
                 message.setChatId(update.getMessage().getChatId().toString());
                 message.enableHtml(true);
 
+
                 int chatId = Integer.parseInt(update.getMessage().getChatId().toString());
                 PSQL psql = new PSQL();
+                String text = update.getMessage().getText();
                 System.out.println("OPENED CONNECTION");
 
-                personalChatCode(message, psql, update, chatId);
+                if (chatId > 0) { //Personal Chats have positive chatId while Group Chats have negative chatId
+                    personalChatCode(message, psql, update, chatId);
 
+                    //Wit is used to interact with Users. It is still in development
+                    //witJavaCommand(text);
+                } else {
+                    groupChatCode(message, psql, update);
+                }
             }
             else if (update.hasCallbackQuery()) {
                 String callData = update.getCallbackQuery().getData();
@@ -94,6 +107,55 @@ class BoLuiBot extends TelegramLongPollingBot {
 
         } catch (SQLException | TelegramApiException | URISyntaxException | IOException throwables) {
             throwables.printStackTrace();
+        }
+    }
+
+    private void witJavaCommand(String text) {
+        try {
+            String encodedText = URLEncoder.encode(text, "UTF-8");
+            URL url = new URL("https://api.wit.ai/message?v=20210813&q=" + encodedText);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("Authorization", "Bearer UNI5BQKKTCNFTDHAV7JW3JZLPUAWD5N4");
+
+            if (conn.getResponseCode() != 200) {
+                throw new RuntimeException("Failed : HTTP error code : "
+                        + conn.getResponseCode());
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(
+                    (conn.getInputStream())));
+
+            String output;
+            System.out.println("Output from Server .... \n");
+            while ((output = br.readLine()) != null) {
+                System.out.println(output);
+            }
+
+            conn.disconnect();
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+        }
+    }
+
+    private void groupChatCode(SendMessage message, PSQL psql, Update update) throws TelegramApiException, URISyntaxException, SQLException {
+
+        String text = update.getMessage().getText();
+        String name = update.getMessage().getFrom().getFirstName();
+        Integer messageId = update.getMessage().getMessageId();
+        int chatId = Integer.parseInt(update.getMessage().getFrom().getId().toString());
+
+        if (text.endsWith("@bo_lui_test_bot")) {
+            message.setText("Hi " + name + ", I see your msg in this group chat. Thanks for having me in this cosy group. Right now, " +
+                    "I am unable to facilitate finance tracking in a group setting. But, I will soon so stay tune!");
+            message.setReplyToMessageId(messageId);
+            execute(message);
+            psql.closeConnection();
+            System.out.println("CLOSED CONNECTION");
         }
     }
 
@@ -239,13 +301,11 @@ class BoLuiBot extends TelegramLongPollingBot {
         execute(sendDocument);
     }
 
-
-
     private void executeCallbackEvent(Event event, EditMessageText newMessage, SendMessage message, PSQL psql) throws SQLException, TelegramApiException, URISyntaxException {
         event.generateEvent();
         String msg = message.toString();
         event.updateDatabase(); //NOTE THAT UPDATE DATABASE IS AFTER GENERATE EVENT (FOR THE DELETE EVENT)
-        if (newMessage.getText() != null){ //cannot execute empty newMessage
+        if (!(newMessage.getText() == null)){ //cannot execute empty newMessage
             execute(newMessage);
         }
         execute(message);

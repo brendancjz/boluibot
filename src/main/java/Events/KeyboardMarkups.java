@@ -251,5 +251,24 @@ class KeyboardMarkups {
         markup.setOneTimeKeyboard(true);
         return markup;
     }
+
+    public static ReplyKeyboardMarkup getDelReplyKeyboardMarkup() {
+        KeyboardRow row = new KeyboardRow();
+
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        KeyboardButton button1 = new KeyboardButton();
+        button1.setText("anything");
+        row.add(button1);
+
+        keyboard.add(row);
+
+        ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
+        markup.setKeyboard(keyboard);
+        markup.setResizeKeyboard(true);
+        markup.setOneTimeKeyboard(true);
+        return markup;
+    }
+
     
 }

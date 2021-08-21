@@ -823,7 +823,7 @@ public class PSQL {
     // -- ease of viewing other months data.
     public String getMonthFinancials(int chatId, YearMonth yearMonth) throws SQLException {
 
-        String fEntry = "<b>" + yearMonth.getMonth()+ " Money Flow</b>\n\n";
+        String fEntry = "<b>" + yearMonth.getMonth()+ " Piggybank</b>\n\n";
         ResultSet resultSet = getUsersDataResultSet(chatId);
 
         int userId = 0;
@@ -1066,10 +1066,13 @@ public class PSQL {
      */
     public String getDeleteEntry (int chatId, int[] delEntryNumArr) throws SQLException{
         String entry = "<b>Selected Entry</b>\n";
-        int userId = 0, entriesId = 0, delAmount = -1, delMultiplier = -1;
+        int userId = 0, entriesId = 0, delAmount = -1, delMultiplier = -1, count = 0;
         double cost = 0;
         String entryType = "", comment = "";
         Date entryDate = new Date();
+
+        //Sort so that the right entry number can be
+        Arrays.sort(delEntryNumArr);
 
         ResultSet resultSet = getUsersDataResultSet(chatId);
         System.out.println("DELETE: run getUSERS");
@@ -1077,8 +1080,11 @@ public class PSQL {
             userId = resultSet.getInt("user_id");
         }
 
-        for (int userEntryNum : delEntryNumArr) {
-            resultSet = getSpecificEntryResultSet(userId, userEntryNum);
+        //For output
+        for (int selEntryNum : delEntryNumArr) {
+
+            int dbEntryNum = selEntryNum - count;
+            resultSet = getSpecificEntryResultSet(userId, dbEntryNum);
             System.out.println("DELETE: run getSPECIFICENTRY");
 
             while (resultSet.next()) {
@@ -1101,19 +1107,26 @@ public class PSQL {
             //System.out.println("entryMonth: " + entryMonth );
 
             if (entryType.equals("spend")) {
-                entry += "   " + userEntryNum + ".  - $" + cost + " : " + comment + "\n";
+                entry += "   " + selEntryNum + ".  - $" + cost + " : " + comment + "\n";
             } else if (entryType.equals("earn")) {
-                entry += "   " + userEntryNum + ".  + $" + cost + " : " + comment + "\n";
+                entry += "   " + selEntryNum + ".  + $" + cost + " : " + comment + "\n";
             }
 
-            updateEntryCountAndNum(chatId, userEntryNum, delAmount);
+
+            //For actual deletion
+            updateEntryCountAndNum(chatId, dbEntryNum, delAmount);
             System.out.println("DELETE: update EntryCount");
             updateFinancial(userId, entryYear, entryMonth, cost, delMultiplier, entryType);
             System.out.println("DELETE: update Financials");
             deleteEntryRow(entriesId);
             System.out.println("DELETE: Deleted item");
 
+            count += 1;
+        
+
         }
+
+
 
         entry+= "<em>has/have been deleted.</em>";
         return entry;
@@ -1386,6 +1399,18 @@ public class PSQL {
 
     }
 
+    public ArrayList<String> getAllChatId() throws SQLException {
+        String sql = "SELECT * from users";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        ResultSet resultSet = statement.executeQuery();
 
+        ArrayList<String> chatIds = new ArrayList<>();
+        while(resultSet.next()) {
+            int chatId = resultSet.getInt("chat_id");
+            chatIds.add(Integer.toString(chatId));
 
+        }
+
+        return chatIds;
+    }
 }
