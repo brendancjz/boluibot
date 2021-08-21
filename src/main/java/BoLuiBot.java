@@ -149,7 +149,7 @@ class BoLuiBot extends TelegramLongPollingBot {
         Integer messageId = update.getMessage().getMessageId();
         int chatId = Integer.parseInt(update.getMessage().getFrom().getId().toString());
 
-        if (text.endsWith("@bo_lui_test_bot")) {
+        if (text.endsWith("@bo_lui_bot")) {
             message.setText("Hi " + name + ", I see your msg in this group chat. Thanks for having me in this cosy group. Right now, " +
                     "I am unable to facilitate finance tracking in a group setting. But, I will soon so stay tune!");
             message.setReplyToMessageId(messageId);
@@ -220,7 +220,7 @@ class BoLuiBot extends TelegramLongPollingBot {
                     System.out.println("========= Shortcut Help Events.Event Called ========= ");
                     event = new GenShortcutHelpEvent(message, psql, chatId);
                     break;
-                case "/finance":
+                case "/piggybank":
                     System.out.println("========= Generate Financials Events.Event Called ========= ");
                     event = new GenFinancialsEvent(message, psql, chatId);
                     break;
