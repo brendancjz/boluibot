@@ -380,7 +380,11 @@ public class PSQL {
         System.out.println("---------------- Updating User Entry Type");
 
         //Example: command: /spend , entryType: spend.
+        //Another Example for Group Chat: /spend@bo_lui_bot
         String entryType = command.substring(1);
+        if (command.contains("@")) {
+            entryType = command.substring(1, command.indexOf("@"));
+        }
         System.out.println("entry_type is now: " + entryType);
 
         String sql = "UPDATE users SET entry_type=? WHERE chat_id=? ";

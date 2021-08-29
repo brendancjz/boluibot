@@ -77,6 +77,9 @@ public class GenShortcutEvent extends Event {
             System.out.println("GENSHORTCUTEVENT reached to the end of generateEvent");
             message.setText("Reminder: your input should be as follows: \n[command] [category] [cost/earning] [comment]");
         }
+        else {
+            message.setText("Invalid Command. Please try again.");
+        }
     }
 
     private void generateErrorMsgAndReturn(String[] textArr) throws SQLException {

@@ -22,8 +22,9 @@ public class GenNumPadInlineKeyboardEvent extends Event{
 
     @Override
     public void generateEvent() throws SQLException, URISyntaxException {
-        boolean below2DP = prevAnswer.contains(".") && (prevAnswer.length() - 1 - prevAnswer.indexOf(".")) < 2;
-        boolean already2DP = prevAnswer.contains(".") && (prevAnswer.length() - 1 - prevAnswer.indexOf(".")) == 2;
+        int i = prevAnswer.length() - 1 - prevAnswer.indexOf(".");
+        boolean below2DP = prevAnswer.contains(".") && i < 2;
+        boolean already2DP = prevAnswer.contains(".") && i == 2;
 
         String answer = prevAnswer;
         System.out.println("ADDING " + callData.substring(7));
@@ -65,7 +66,12 @@ public class GenNumPadInlineKeyboardEvent extends Event{
             return;
         }
         else if (callData.equals("numpad_del")) {
-            answer = prevAnswer.substring(0, prevAnswer.length() - 1);
+            if (prevAnswer.equals("Input: $") || prevAnswer.endsWith("[Input Cost]")) {
+                answer = prevAnswer;
+            } else {
+                answer = prevAnswer.substring(0, prevAnswer.length() - 1);
+            }
+
 
         }
         else if (already2DP) {
