@@ -387,12 +387,12 @@ class BoLuiBot extends TelegramLongPollingBot {
             } else if (text.startsWith("/help")) {
                 System.out.println("========= Help Events.Event Called ========= ");
                 event = new HelpEvent(message, psql, chatId);
-            } else if (text.startsWith("/feedback")) {
-                System.out.println("========= Feedback Events.Event Called ========= ");
-                event = new FeedbackEvent(message, psql, chatId);
             } else if (text.startsWith("/feedbacklogs")) {
                 System.out.println("========= Feedback Log Events.Event Called ========= ");
                 generateFeedBackFile(chatId,psql);
+            } else if (text.startsWith("/feedback")) {
+                System.out.println("========= Feedback Events.Event Called ========= ");
+                event = new FeedbackEvent(message, psql, chatId);
             } else if (text.startsWith("/summary")) {
                 System.out.println("========= Summary Events.Event Called ========= ");
                 generateSummaryFile(chatId,psql);
