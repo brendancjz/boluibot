@@ -8,7 +8,7 @@ import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class SummaryBot extends TelegramLongPollingBot {
+public class AnnouncementBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
@@ -29,15 +29,21 @@ public class SummaryBot extends TelegramLongPollingBot {
             PSQL psql = new PSQL();
             ArrayList<String> chatIds = psql.getAllChatId();
 
-            SendMessage message = new SendMessage();
-            message.setChatId("" + 107270014);
-            //message.setText(chatIds.toString());
-            message.setText("Update.");
+            for (String chatId : chatIds) {
+                SendMessage message = new SendMessage();
+                message.setChatId(chatId);
+                message.setText(announcement());
 
-            execute(message);
+                execute(message);
+            }
+            
             psql.closeConnection();
         } catch (URISyntaxException | SQLException | TelegramApiException e) {
             e.printStackTrace();
         }
+    }
+
+    private String announcement() {
+        return "Hello there! Thank you for using me as your personal finance tracking bot. It's a new month! Did you spend on anything today? Type /spend to get started. <code>-Bo</code>";
     }
 }

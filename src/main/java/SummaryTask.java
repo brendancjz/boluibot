@@ -6,6 +6,6 @@ public class SummaryTask extends TimerTask {
     public void run() {
         System.out.println("SummaryTask is running...");
         SummaryBot bot = new SummaryBot();
-        bot.runDailySummary();
+        bot.run();
     }
 }

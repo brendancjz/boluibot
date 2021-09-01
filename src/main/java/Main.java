@@ -13,6 +13,10 @@ public class Main {
             SummaryTimer timer = new SummaryTimer("daily", 2100);
             timer.start();
 
+            AnnouncementTimer annTimer = new AnnouncementTimer(2100);
+            annTimer.start();
+
+
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
