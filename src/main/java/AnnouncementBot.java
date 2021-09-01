@@ -33,10 +33,11 @@ public class AnnouncementBot extends TelegramLongPollingBot {
                 SendMessage message = new SendMessage();
                 message.setChatId(chatId);
                 message.setText(announcement());
+                message.enableHtml(true);
 
                 execute(message);
             }
-            
+
             psql.closeConnection();
         } catch (URISyntaxException | SQLException | TelegramApiException e) {
             e.printStackTrace();
