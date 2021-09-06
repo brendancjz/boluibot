@@ -260,7 +260,7 @@ class BoLuiBot extends TelegramLongPollingBot {
 //            } else if (text.startsWith("/delete")) {
 //                System.out.println("========= Delete Events.Event Called ========= ");
 //                event = new DeleteEvent(message, psql, chatId);
-//            } else if (text.startsWith("/piggyback")) {
+//            } else if (text.startsWith("/piggybank")) {
 //                System.out.println("========= Generate Financials Events.Event Called ========= ");
 //                event = new GenFinancialsEvent(message, psql, chatId);
 //            } else if (text.startsWith("/help")) {

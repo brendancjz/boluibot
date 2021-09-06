@@ -45,6 +45,10 @@ public class AnnouncementBot extends TelegramLongPollingBot {
     }
 
     private String announcement() {
-        return "Hello there! Thank you for using me as your personal finance tracking bot. It's a new month! Did you spend on anything today? Type /spend to get started. <code>-Bo</code>";
+        return "[Tip] Hi there! Bo would like to give you a tip when inputting an entry. " +
+                "To input an amount, you can use either the numbers on your keyboard or the given number pad. " +
+                "\n\nBought anything today? Type /spend to get started. <code>-Bo</code>";
     }
+
+    //"Hello there! Thank you for using me as your personal finance tracking bot. It's a new month! Did you spend on anything today? Type /spend to get started. <code>-Bo</code>"
 }
