@@ -15,6 +15,7 @@ public class AnnouncementTimer {
     }
 
     public void start() {
+        System.out.println("Announcement has been scheduled.");
         timer.schedule(task, getScheduledDate(this.scheduledTime));
     }
 
@@ -53,16 +54,16 @@ public class AnnouncementTimer {
         int secNow = dateNow.getSecond();
         System.out.println("dayOfMonthNow: " + dayOfMonthNow + " hourNow: " + ((hourNow + 8) % 24) + " minNow: " + minNow + " secNow: " + secNow);
 
-        LocalDateTime startOnFriday;
+        LocalDateTime startDate;
         if (isBeforeScheduledTime(hour, min, sec, hourNow, minNow, secNow)) { //Before timing
-            startOnFriday = LocalDateTime.of(yearNow, monthNow, dayOfMonthNow, hour, min, sec);
-            System.out.println("It has not passed the timing. Setting timer for later: " + startOnFriday.toString());
+            startDate = LocalDateTime.of(yearNow, monthNow, dayOfMonthNow, hour, min, sec);
+            System.out.println("It has not passed the timing. Setting timer for later: " + startDate.toString());
         } else { //After timing
-            startOnFriday = LocalDateTime.of(yearNow, monthNow, dayOfMonthNow, hourNow, min, sec).plusHours(24 - (hourNow - hour));
-            System.out.println("It has passed the timing. Setting timer for the next interval: " + startOnFriday.toString());
+            startDate = LocalDateTime.of(yearNow, monthNow, dayOfMonthNow, hourNow, min, sec).plusHours(24 - (hourNow - hour));
+            System.out.println("It has passed the timing. Setting timer for the next interval: " + startDate.toString());
         }
 
-        return Date.from(startOnFriday.atZone(ZoneId.systemDefault()).toInstant());
+        return Date.from(startDate.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     private static boolean isBeforeScheduledTime(int scheduledHour, int scheduledMin, int scheduledSec, int hourNow, int minNow, int secNow) {
