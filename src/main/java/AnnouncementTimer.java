@@ -57,10 +57,10 @@ public class AnnouncementTimer {
         LocalDateTime startDate;
         if (isBeforeScheduledTime(hour, min, sec, hourNow, minNow, secNow)) { //Before timing
             startDate = LocalDateTime.of(yearNow, monthNow, dayOfMonthNow, hour, min, sec);
-            System.out.println("It has not passed the timing. Setting timer for later: " + startDate.toString());
+            System.out.println("It has not passed the timing. Setting announcement for later: " + startDate.toString());
         } else { //After timing
             startDate = LocalDateTime.of(yearNow, monthNow, dayOfMonthNow, hourNow, min, sec).plusHours(24 - (hourNow - hour));
-            System.out.println("It has passed the timing. Setting timer for the next interval: " + startDate.toString());
+            System.out.println("It has passed the timing. Setting announcement for the next timing: " + startDate.toString());
         }
 
         return Date.from(startDate.atZone(ZoneId.systemDefault()).toInstant());
