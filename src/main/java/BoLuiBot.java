@@ -18,9 +18,11 @@ import java.sql.*;
 import java.util.ArrayList;
 
 class BoLuiBot extends TelegramLongPollingBot {
-
+    private final String botUsername;
+    private final String botToken;
     BoLuiBot() {
-
+        botUsername = System.getenv("BOT_USERNAME");
+        botToken = System.getenv("BOT_TOKEN");
     }
 
     @Override
