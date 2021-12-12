@@ -37,28 +37,21 @@ class BoLuiBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        //TODO
-        // Allow user to choose language for Telebot (sassy mode (e.g. EH STOP SPENDING), cat (e.g. how much kibble did you earn)) (SUPER LOW)
-        // Need more commands to spice up user experience.
-        // /Bill for user to key in recurring payment (LOW)
-        // /Setgoal for user to set target amount spend for each category (LOW)
-        // We check if the update has a message and the message has text
-
 
         try {
 
             if (update.hasMessage() && update.getMessage().hasText()) {
-                SendMessage message = new SendMessage(); // Create a SendMessage object with mandatory fields
+                SendMessage message = new SendMessage();
                 message.setChatId(update.getMessage().getChatId().toString());
                 message.enableHtml(true);
 
 
                 int chatId = Integer.parseInt(update.getMessage().getChatId().toString());
                 PSQL psql = new PSQL();
-                //String text = update.getMessage().getText();
                 System.out.println("OPENED CONNECTION");
 
-                if (chatId > 0) { //Personal Chats have positive chatId while Group Chats have negative chatId
+                //Personal Chats have positive chatId while Group Chats have negative chatId
+                if (chatId > 0) {
                     personalChatMessage(message, psql, update, chatId);
 
                     //Wit is used to interact with Users. It is still in development
@@ -74,16 +67,12 @@ class BoLuiBot extends TelegramLongPollingBot {
                 String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
 
                 if (Integer.parseInt(chatId) > 0) {
-                    System.out.println("In personalChatCallback");
                     personalChatCallback(chatId, messageId, callData, prevAnswer);
+
                 } else {
-                    System.out.println("In groupChatCallback");
                     groupChatCallback(chatId, messageId, callData, prevAnswer, update);
                 }
-
-
             }
-
         } catch (SQLException | TelegramApiException | URISyntaxException | IOException throwables) {
             throwables.printStackTrace();
         }
@@ -202,125 +191,10 @@ class BoLuiBot extends TelegramLongPollingBot {
     }
 
     private void groupChatMessage(SendMessage message, PSQL psql, Update update) throws TelegramApiException, URISyntaxException, SQLException, IOException {
-
-        //TODO
-        // - Group Budgetting
-        // - Personal tracking while in group chat
-        // - In order facilitating entries, we need to get the user to reply to that message for it to work
-        // - Need to find out how to recognise replied msg from user
-        // - Split bill
-        // - Fix GroupCallBack [Very high]
         String text = update.getMessage().getText();
         String name = update.getMessage().getFrom().getFirstName();
         Integer messageId = update.getMessage().getMessageId();
         int chatId = Integer.parseInt(update.getMessage().getFrom().getId().toString());
-
-//        Event event = null;
-//        message.setReplyToMessageId(messageId);
-//
-//        //Universal Commands. No need to update Query and check User.
-//        if (text.startsWith("/start")) {
-//            System.out.println("=== Start Events.Event Called === ");
-//            event = new StartEvent(message, psql, chatId, name);
-//            executeEvent(event, message, psql);
-//            return; //Code ends here
-//        }
-//
-//        //When received a text, check the sender of this text and update text into database.
-//        boolean isCheckGood = checkingQueryAndUser(chatId, text, psql);
-//        if (!isCheckGood) {
-//            System.out.println("=== Not Registered Events.Event Called === ");
-//            event = new NotRegisteredEvent(message, psql, chatId);
-//            executeEvent(event, message, psql);
-//            return; //Code ends here
-//        } else {
-//            System.out.println("=== User and Text All Good === ");
-//        }
-//
-//        //Retrieving Information
-//        boolean isInputtingEntry = psql.getIsUserInputting(chatId);
-//        String entryType = psql.getUserEntryType(chatId); //userType as defined in entries table
-//
-//        //Conditionals
-//        boolean cancelCondition = text.equals("Cancel") || text.length() >= 7 && text.startsWith("/cancel");
-//        boolean goodCommandCondition = text.charAt(0) == '/' && !isInputtingEntry;
-//        boolean badCommandCondition = !cancelCondition && text.charAt(0) == '/' && isInputtingEntry;
-//
-//        if (goodCommandCondition) {
-//            if (text.startsWith("/entries")) {
-//                System.out.println("========= Entries Events.Event Called ========= ");
-//                event = new GenEntriesEvent(message, psql, chatId);
-//            } else if (text.startsWith("/spend")) {
-//                System.out.println("========= Spend Events.Event Called ========= ");
-//                event = new SpendEvent(message, psql, chatId);
-//            } else if (text.startsWith("/earn")) {
-//                System.out.println("========= Earn Events.Event Called ========= ");
-//                event = new EarnEvent(message, psql, chatId);
-//            } else if (text.startsWith("/edit")) {
-//                System.out.println("========= Edit Events.Event Called ========= ");
-//                event = new EditEvent(message, psql, chatId);
-//            } else if (text.startsWith("/delete")) {
-//                System.out.println("========= Delete Events.Event Called ========= ");
-//                event = new DeleteEvent(message, psql, chatId);
-//            } else if (text.startsWith("/piggybank")) {
-//                System.out.println("========= Generate Financials Events.Event Called ========= ");
-//                event = new GenFinancialsEvent(message, psql, chatId);
-//            } else if (text.startsWith("/help")) {
-//                System.out.println("========= Help Events.Event Called ========= ");
-//                event = new HelpEvent(message, psql, chatId);
-//            } else if (text.startsWith("/feedback")) {
-//                System.out.println("========= Feedback Events.Event Called ========= ");
-//                event = new FeedbackEvent(message, psql, chatId);
-//            } else if (text.startsWith("/feedbacklogs")) {
-//                System.out.println("========= Feedback Log Events.Event Called ========= ");
-//                generateFeedBackFile(chatId,psql);
-//            } else if (text.startsWith("/summary")) {
-//                System.out.println("========= Summary Events.Event Called ========= ");
-//                generateSummaryFile(chatId,psql);
-//            } else if (text.equals("/s") || text.equals("/e")) {
-//                System.out.println("========= Shortcut Help Events.Event Called ========= ");
-//                event = new GenShortcutHelpEvent(message, psql, chatId);
-//            } else {
-//                System.out.println("========= Generate Shortcut Events.Event Called ========= ");
-//                event = new GenShortcutEvent(message, psql, chatId);
-//            }
-//        }
-//        else if (isInputtingEntry) {
-//            if (cancelCondition) { //User cancels entry.
-//                event = new CancelEvent(message, psql, chatId);
-//
-//            } else if (badCommandCondition) {
-//                event = new BadCommandEvent(message, psql, chatId);
-//
-//            } else {
-//                switch (entryType) {
-//                    case "spend":
-//                        System.out.println("========= Spend Events.Event Called ========= ");
-//                        event = new SpendEvent(message, psql, chatId);
-//                        break;
-//                    case "earn":
-//                        System.out.println("========= Earn Events.Event Called ========= ");
-//                        event = new EarnEvent(message, psql, chatId);
-//                        break;
-//                    case "edit":
-//                        System.out.println("========= Edit Events.Event Called ========= ");
-//                        event = new EditEvent(message, psql, chatId);
-//                        break;
-//                    case "delete":
-//                        System.out.println("========= Delete Events.Event Called ========= ");
-//                        event = new DeleteEvent(message, psql, chatId);
-//                        break;
-//                    case "feedback":
-//                        System.out.println("========= Feedback Events.Event Called ========= ");
-//                        event = new FeedbackEvent(message, psql, chatId);
-//                        break;
-//                }
-//            }
-//        }
-//
-//        assert event != null;
-//        System.out.println("Executing Event");
-//        executeEvent(event, message, psql);
 
         if (text.endsWith("@bo_lui_test_bot")) {
             message.setText("Hi " + name + ", I see your msg in this group chat. Thanks for having me in this cosy group. Right now, " +
@@ -464,6 +338,7 @@ class BoLuiBot extends TelegramLongPollingBot {
         execute(sendDocument);
     }
 
+    //In development
     private void generateSummaryFile(int chatId, PSQL psql) throws IOException, TelegramApiException, SQLException {
         //Creating SendDocuments
         SendPhoto photo = new SendPhoto();
@@ -493,7 +368,9 @@ class BoLuiBot extends TelegramLongPollingBot {
 
     private void executeCallbackEvent(Event event, EditMessageText newMessage, SendMessage message, PSQL psql) throws SQLException, TelegramApiException, URISyntaxException {
         event.generateEvent();
+
         String msg = message.toString();
+
         event.updateDatabase(); //NOTE THAT UPDATE DATABASE IS AFTER GENERATE EVENT (FOR THE DELETE EVENT)
         if (!(newMessage.getText() == null)){ //cannot execute empty newMessage
             execute(newMessage);
@@ -501,6 +378,7 @@ class BoLuiBot extends TelegramLongPollingBot {
         execute(message);
 
         event.generateOtherEvents();
+
         if (!msg.equals(message.toString())) { //Only proceed down if message changed.
             execute(message);
         }
