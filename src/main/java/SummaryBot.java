@@ -12,12 +12,12 @@ public class SummaryBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return "bo_lui_bot";
+        return System.getenv("BOT_USERNAME");
     }
 
     @Override
     public String getBotToken() {
-        return "1763203814:AAFbCkdniUC5EJpiLMb3Uq5GUIP7xj60Mpw";
+        return System.getenv("BOT_TOKEN");
     }
 
     @Override
