@@ -1,4 +1,7 @@
 # Bo Lui Bot
+
+<img src="https://raw.githubusercontent.com/brendancjz/boluibot/main/BoLuiBotPics/BoLuiPic%5B2507%5D-08.png" alt="bo-lui-bot" width="250">
+
 BoLui is a personal finance bot that keeps track users spendings and earnings.
 
 I am Bo Lui and I welcome you to Sir Brendan's financial tracker to track how deep your pockets are! Sir Brendan is my creator.
