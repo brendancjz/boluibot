@@ -1373,11 +1373,6 @@ public class PSQL {
         return feedbackData;
     }
 
-    //Miscellaneous Code
-    //--------------------------------------------------------------------------
-    //--------------------------------------------------------------------------
-    //--------------------------------------------------------------------------
-
     /**
      * This method gets a connection with the POSTGRESQL database through JDBC
      * @return Returns the connection necessary to power the queries
